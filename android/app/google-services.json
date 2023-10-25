@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "867750963476",
+    "project_id": "running-mate-c7ed4",
+    "storage_bucket": "running-mate-c7ed4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:867750963476:android:290cbddb0efaaa060bfa01",
+        "android_client_info": {
+          "package_name": "com.example.running_mate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCp0ON6K7PzPlOLsvQukHAHZFRH4D6C-Sg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
