@@ -1,28 +1,54 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:running_mate/models/meeting_article.dart';
+import 'package:running_mate/providers/article_provider.dart';
 import 'package:running_mate/screens/map.dart';
 import 'package:running_mate/widgets/ui_elements/input_label.dart';
 
-class NewArticleScreen extends StatefulWidget {
+class NewArticleScreen extends ConsumerStatefulWidget {
   const NewArticleScreen({super.key});
 
   @override
-  State<NewArticleScreen> createState() => _NewArticleScreenState();
+  ConsumerState<NewArticleScreen> createState() => _NewArticleScreenState();
 }
 
-class _NewArticleScreenState extends State<NewArticleScreen> {
+class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
+  var isUpdating = false;
   final _formKey = GlobalKey<FormState>();
+
   final locTextController = TextEditingController();
   final timeTextController = TextEditingController();
   final dateTextController = TextEditingController();
   var _enteredTitle = '';
   var _enteredDesc = '';
+  late String articleId;
+
   TimeOfDay _selectedTime = TimeOfDay.now();
   LatLng? _selectedCoords;
 
   var _loading = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final updatingArticle = ref.watch(meetingArticleProvider).updateArticle;
+    if (updatingArticle.id.isNotEmpty) {
+      setState(() {
+        isUpdating = true;
+        articleId = updatingArticle.id;
+        _enteredTitle = updatingArticle.title;
+        _enteredDesc = updatingArticle.desc;
+        locTextController.text = updatingArticle.address!.name;
+        timeTextController.text = updatingArticle.time;
+        dateTextController.text = updatingArticle.date;
+        _selectedCoords =
+            LatLng(updatingArticle.address!.lat, updatingArticle.address!.lng);
+      });
+    }
+  }
 
   void onTabLocationField() async {
     final Map<String, dynamic>? result =
@@ -44,12 +70,16 @@ class _NewArticleScreenState extends State<NewArticleScreen> {
 
   void _onCreateArticle() async {
     if (_formKey.currentState!.validate() && _selectedCoords != null) {
+      print('--------------게시글 등록 Or 수정---------');
       _formKey.currentState!.save();
       _loading = true;
 
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       final authencatiedUser = FirebaseAuth.instance.currentUser!;
-      await firestore.collection("articles").doc().set(
+      await firestore
+          .collection("articles")
+          .doc(isUpdating ? articleId : null)
+          .set(
         {
           "user": authencatiedUser.uid,
           "title": _enteredTitle,
@@ -69,6 +99,18 @@ class _NewArticleScreenState extends State<NewArticleScreen> {
       if (!mounted) {
         return;
       }
+      if (isUpdating) {
+        ref
+            .read(meetingArticleProvider.notifier)
+            .updateArticleList(MeetingArticle(
+              id: articleId,
+              title: _enteredTitle,
+              desc: _enteredDesc,
+              user: authencatiedUser.uid,
+              date: dateTextController.text,
+              time: timeTextController.text,
+            ));
+      }
       Navigator.pop(context);
     }
   }
@@ -77,7 +119,7 @@ class _NewArticleScreenState extends State<NewArticleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('오늘의 런닝 등록'),
+        title: Text(!isUpdating ? '등록' : '게시글 수정'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -93,6 +135,7 @@ class _NewArticleScreenState extends State<NewArticleScreen> {
                   height: 8,
                 ),
                 TextFormField(
+                  initialValue: _enteredTitle,
                   maxLength: 30,
                   decoration: InputDecoration(
                     label: const Text('제목'),
@@ -116,6 +159,7 @@ class _NewArticleScreenState extends State<NewArticleScreen> {
                 ),
                 const InputLabel(text: '자세한 설명'),
                 TextFormField(
+                  initialValue: _enteredDesc,
                   maxLength: 200,
                   maxLines: 6,
                   decoration: InputDecoration(
@@ -260,9 +304,9 @@ class _NewArticleScreenState extends State<NewArticleScreen> {
                       onPressed: !_loading ? _onCreateArticle : null,
                       child: _loading
                           ? const CircularProgressIndicator()
-                          : const Text(
-                              '작성 완료',
-                              style: TextStyle(
+                          : Text(
+                              !isUpdating ? '작성 완료' : '수정 완료',
+                              style: const TextStyle(
                                 fontSize: 20,
                               ),
                             )),

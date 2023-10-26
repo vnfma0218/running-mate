@@ -2,26 +2,40 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui' as ui;
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:running_mate/models/meeting_article.dart';
 import 'package:running_mate/models/user.dart';
+import 'package:running_mate/providers/article_provider.dart';
+import 'package:running_mate/screens/new_article.dart';
 import 'package:running_mate/services/util_service.dart';
 import 'package:running_mate/widgets/google_map.dart';
 
-class ArticleDetailScreen extends StatefulWidget {
+const mapDropDownList = {
+  "게시글 수정": "update",
+  "삭제": "delete",
+};
+
+const List<String> dropDownList = <String>[
+  '게시글 수정',
+  '삭제',
+];
+
+class ArticleDetailScreen extends ConsumerStatefulWidget {
   const ArticleDetailScreen(
       {super.key, required this.article, required this.user});
 
-  final MettingArticle article;
+  final MeetingArticle article;
   final User user;
 
   @override
-  State<ArticleDetailScreen> createState() => _ArticleDetailScreenState();
+  ConsumerState<ArticleDetailScreen> createState() =>
+      _ArticleDetailScreenState();
 }
 
-class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
+class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   final List<Marker> _markers = [];
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
@@ -41,12 +55,24 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
     final marker = Marker(
       icon: BitmapDescriptor.fromBytes(markerIcon),
       markerId: const MarkerId('1'),
-      position: LatLng(widget.article.address.lat, widget.article.address.lng),
+      position:
+          LatLng(widget.article.address!.lat, widget.article.address!.lng),
     );
 
     setState(() {
       _markers.add(marker);
     });
+  }
+
+  void _onUpdateArticle() async {
+    ref.read(meetingArticleProvider.notifier).addUpdateArticle(widget.article);
+
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return const NewArticleScreen();
+      },
+    ));
+    // widget.article =
   }
 
   @override
@@ -55,21 +81,38 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
   }
 
   get getTimeDifference {
-    return UtilService().formatDate(widget.article.createdAt.toDate());
+    return UtilService().formatDate(widget.article.createdAt!.toDate());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        actions: [
+          DropdownButton(
+              icon: const Icon(Icons.more_vert),
+              underline: const SizedBox.shrink(),
+              items: dropDownList.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (mapDropDownList[value] == 'update') {
+                  _onUpdateArticle();
+                }
+              }),
+        ],
+      ),
       body: Column(
         children: [
           SizedBox(
             height: 300,
             child: GoogleMapWidget(
               center: LatLng(
-                widget.article.address.lat,
-                widget.article.address.lng,
+                widget.article.address!.lat,
+                widget.article.address!.lng,
               ),
               markers: _markers.toSet(),
               onMapCreated: _onMapCreated,

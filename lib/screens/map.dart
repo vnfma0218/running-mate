@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -49,7 +51,6 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _selectLocation() async {
-    print('isMapMoved: $isMapMoved');
     final String? result = await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -59,12 +60,19 @@ class _MapScreenState extends State<MapScreen> {
         );
       },
     );
-    if (result == null || result.trim().isEmpty || !mounted) {
+    if (result == null || result.trim().isEmpty) {
       return;
     }
-    Navigator.pop(context, {
-      'text': result,
-      'coords': _center,
+
+    if (!mounted) {
+      return;
+    }
+
+    Timer(const Duration(milliseconds: 500), () {
+      Navigator.pop(context, {
+        'text': result,
+        'coords': _center,
+      });
     });
   }
 

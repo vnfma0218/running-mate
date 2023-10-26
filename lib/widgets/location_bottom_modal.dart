@@ -22,7 +22,6 @@ class _LocationBottomModalState extends State<LocationBottomModal> {
 
   @override
   void dispose() {
-    controlller.dispose();
     super.dispose();
   }
 
