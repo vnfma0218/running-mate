@@ -1,12 +1,16 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:running_mate/models/meeting_article.dart';
 import 'package:running_mate/providers/article_provider.dart';
 import 'package:running_mate/screens/map.dart';
 import 'package:running_mate/widgets/ui_elements/input_label.dart';
+import 'package:http/http.dart' as http;
 
 class NewArticleScreen extends ConsumerStatefulWidget {
   const NewArticleScreen({super.key});
@@ -24,12 +28,18 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
   final dateTextController = TextEditingController();
   var _enteredTitle = '';
   var _enteredDesc = '';
+  var _formattedAddress = '';
   late String articleId;
 
   TimeOfDay _selectedTime = TimeOfDay.now();
   LatLng? _selectedCoords;
 
   var _loading = false;
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -41,7 +51,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
         articleId = updatingArticle.id;
         _enteredTitle = updatingArticle.title;
         _enteredDesc = updatingArticle.desc;
-        locTextController.text = updatingArticle.address!.name;
+        locTextController.text = updatingArticle.address!.title;
         timeTextController.text = updatingArticle.time;
         dateTextController.text = updatingArticle.date;
         _selectedCoords =
@@ -51,6 +61,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
   }
 
   void onTabLocationField() async {
+    print('_selectedCoords: $_selectedCoords');
     final Map<String, dynamic>? result =
         await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
@@ -64,13 +75,34 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
     if (result == null) {
       return;
     }
+
     _selectedCoords = result['coords'];
+    // print(_selectedCoords.);
+    _formattedAddress = await _getPlaceAddress(
+        _selectedCoords!.latitude, _selectedCoords!.longitude);
     locTextController.text = result['text'];
+  }
+
+  Future<String> _getPlaceAddress(double lat, double lng) async {
+    final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${dotenv.env['google_api_key']}&language=ko');
+
+    final response = await http.get(url);
+    final addressComponents =
+        jsonDecode(response.body)['results'][0]['address_components'] as List;
+    // final locality = addressComponents.where(
+    //   (element) => element.types.contains('locality'),
+    // );
+    print(addressComponents);
+    print(
+        'response : ${jsonDecode(response.body)['results'][0]['address_components']}');
+    return jsonDecode(response.body)['results'][0]['formatted_address'];
   }
 
   void _onCreateArticle() async {
     if (_formKey.currentState!.validate() && _selectedCoords != null) {
       print('--------------게시글 등록 Or 수정---------');
+      print('_formattedAddress:$_formattedAddress');
       _formKey.currentState!.save();
       _loading = true;
 
@@ -85,6 +117,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
           "title": _enteredTitle,
           "desc": _enteredDesc,
           "location": {
+            "formattedAddress": _formattedAddress,
             "name": locTextController.text,
             "lat": _selectedCoords?.latitude,
             "lng": _selectedCoords?.longitude,
@@ -102,13 +135,20 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
       if (isUpdating) {
         ref
             .read(meetingArticleProvider.notifier)
-            .updateArticleList(MeetingArticle(
+            .addUpdateArticle(MeetingArticle(
               id: articleId,
               title: _enteredTitle,
               desc: _enteredDesc,
               user: authencatiedUser.uid,
               date: dateTextController.text,
               time: timeTextController.text,
+              createdAt: Timestamp.fromDate(DateTime.now()),
+              address: Address(
+                formattedAddress: '',
+                title: locTextController.text,
+                lat: _selectedCoords!.latitude,
+                lng: _selectedCoords!.longitude,
+              ),
             ));
       }
       Navigator.pop(context);

@@ -25,13 +25,23 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     state.updateArticle = article;
   }
 
+  void resetUpdatingArticle() {
+    state.updateArticle = MeetingArticle(
+      id: '',
+      title: '',
+      desc: '',
+      user: '',
+      date: '',
+      time: '',
+    );
+  }
+
   void updateArticleList(MeetingArticle article) {
     final newList = [...state.articleList];
     newList[newList.indexWhere((element) => element.id == article.id)] =
         article;
 
     state.articleList = newList;
-    // foods[foods.indexWhere((element) => element.uid == food.uid)] = food;
   }
 
   void addArticleList(
@@ -43,16 +53,18 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
         Timestamp createdAt =
             data['createdAt'] ?? Timestamp.fromDate(DateTime.now());
         return MeetingArticle(
-          id: id,
-          user: data['user'],
-          title: data['title'],
-          desc: data['desc'],
-          time: data['time'],
-          date: data['date'],
-          createdAt: createdAt,
-          address: Address(data['location']['name'], data['location']['lat'],
-              data['location']['lng']),
-        );
+            id: id,
+            user: data['user'],
+            title: data['title'],
+            desc: data['desc'],
+            time: data['time'],
+            date: data['date'],
+            createdAt: createdAt,
+            address: Address(
+                formattedAddress: data['location']['formattedAddress'],
+                title: data['location']['name'],
+                lat: data['location']['lat'],
+                lng: data['location']['lng']));
       },
     ).toList();
   }

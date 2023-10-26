@@ -1,10 +1,14 @@
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
+localProperties.load(localPropertiesFile.newDataInputStream())
+
 if (localPropertiesFile.exists()) {
     localPropertiesFile.withReader('UTF-8') { reader ->
         localProperties.load(reader)
     }
 }
+
+
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
@@ -20,6 +24,9 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
+
+def googleAPIKey = localProperties.getProperty('flutter.versionName')
+
 
 apply plugin: 'com.android.application'
 // START: FlutterFire Configuration
@@ -47,6 +54,8 @@ android {
     }
 
     defaultConfig {
+        // buildConfigField "String", "GOOGLE_API_KEY", localPropertiesFile['google_api_key'] 
+
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.running_mate"
         // You can update the following values to match your application needs.
@@ -55,6 +64,7 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        manifestPlaceholders["GOOGLE_API_KEY"] = localProperties['google_api_key']
     }
 
     buildTypes {
@@ -73,3 +83,5 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
+
+

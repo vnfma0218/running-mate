@@ -23,18 +23,6 @@ class _MapScreenState extends State<MapScreen> {
 
   late LatLng _center = const LatLng(37.525967411259835, 126.92247283324362);
 
-  @override
-  void initState() {
-    print('widget.coords: ${widget.coords}');
-    if (widget.coords != null) {
-      _center = widget.coords!;
-    } else {
-      _getLocation();
-      // _center = const LatLng(37.525967411259835, 126.92247283324362);
-    }
-    super.initState();
-  }
-
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
     final marker = Marker(
@@ -43,6 +31,13 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     _markers.add(marker);
+    if (widget.coords != null) {
+      mapController.animateCamera(
+        CameraUpdate.newLatLng(
+          LatLng(widget.coords!.latitude, widget.coords!.longitude),
+        ),
+      );
+    }
   }
 
   void _onCameraMove(position) {
@@ -102,8 +97,11 @@ class _MapScreenState extends State<MapScreen> {
     locationData = await location.getLocation();
     if (locationData.latitude != null) {
       print('----------getcur location---------------');
-      mapController.animateCamera(CameraUpdate.newLatLng(
-          LatLng(locationData.latitude!, locationData.longitude!)));
+      mapController.animateCamera(
+        CameraUpdate.newLatLng(
+          LatLng(locationData.latitude!, locationData.longitude!),
+        ),
+      );
     }
   }
 

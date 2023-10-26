@@ -23,9 +23,14 @@ class MeetingArticle {
 }
 
 class Address {
-  Address(this.name, this.lat, this.lng);
+  Address(
+      {required this.title,
+      required this.lat,
+      required this.lng,
+      required this.formattedAddress});
 
-  final String name;
+  final String title;
   final double lat;
   final double lng;
+  final String formattedAddress;
 }
