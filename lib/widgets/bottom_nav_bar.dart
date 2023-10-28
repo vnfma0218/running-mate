@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
 
-class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
-
-  @override
-  State<BottomNavBar> createState() => _BottomNavBarState();
-}
-
-class _BottomNavBarState extends State<BottomNavBar> {
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
+class BottomNavBar extends StatelessWidget {
+  const BottomNavBar(
+      {super.key, required this.onSelectPage, required this.selectedIdx});
+  final void Function(int selectIdx) onSelectPage;
+  final int selectedIdx;
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
@@ -33,9 +22,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
           label: '채팅',
         ),
       ],
-      currentIndex: _selectedIndex,
+      currentIndex: selectedIdx,
       selectedItemColor: Colors.amber[800],
-      onTap: _onItemTapped,
+      onTap: onSelectPage,
     );
   }
 }

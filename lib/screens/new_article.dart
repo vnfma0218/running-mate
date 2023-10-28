@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -26,7 +27,10 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
   final locTextController = TextEditingController();
   final timeTextController = TextEditingController();
   final dateTextController = TextEditingController();
+  var _isNoLimited = false;
   var _enteredTitle = '';
+  var _enteredDistance = '';
+  var _enteredNumOfPeople = '';
   var _enteredDesc = '';
   var _formattedAddress = '';
   late String articleId;
@@ -88,21 +92,12 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${dotenv.env['google_api_key']}&language=ko');
 
     final response = await http.get(url);
-    final addressComponents =
-        jsonDecode(response.body)['results'][0]['address_components'] as List;
-    // final locality = addressComponents.where(
-    //   (element) => element.types.contains('locality'),
-    // );
-    print(addressComponents);
-    print(
-        'response : ${jsonDecode(response.body)['results'][0]['address_components']}');
+
     return jsonDecode(response.body)['results'][0]['formatted_address'];
   }
 
   void _onCreateArticle() async {
     if (_formKey.currentState!.validate() && _selectedCoords != null) {
-      print('--------------게시글 등록 Or 수정---------');
-      print('_formattedAddress:$_formattedAddress');
       _formKey.currentState!.save();
       _loading = true;
 
@@ -122,6 +117,8 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
             "lat": _selectedCoords?.latitude,
             "lng": _selectedCoords?.longitude,
           },
+          "distance": _enteredDistance,
+          "limitPeople": _isNoLimited ? null : _enteredNumOfPeople,
           "createdAt": FieldValue.serverTimestamp(),
           "date": dateTextController.text,
           "time": timeTextController.text,
@@ -161,10 +158,30 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
       appBar: AppBar(
         title: Text(!isUpdating ? '등록' : '게시글 수정'),
       ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(20),
+            ),
+            onPressed: !_loading ? _onCreateArticle : null,
+            child: _loading
+                ? const CircularProgressIndicator()
+                : Text(
+                    !isUpdating ? '작성 완료' : '수정 완료',
+                    style: const TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: SizedBox(
-          height: 800,
+          height: 900,
           child: Form(
             key: _formKey,
             child: Column(
@@ -194,17 +211,117 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                     _enteredTitle = value!;
                   },
                 ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 9, top: 10),
+                            child: InputLabel(text: '거리 '),
+                          ),
+                          TextFormField(
+                            initialValue: _enteredTitle,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              suffixIcon: const Padding(
+                                padding: EdgeInsets.only(top: 14),
+                                child: Text('km'),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return '거리를 입력해주세요';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _enteredDistance = value!;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const InputLabel(text: '인원'),
+                              const Spacer(),
+                              Container(
+                                padding: EdgeInsets.zero,
+                                child: Checkbox(
+                                    value: _isNoLimited,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _isNoLimited = val!;
+                                      });
+                                    }),
+                              ),
+                              const Text('제한 없음')
+                            ],
+                          ),
+                          TextFormField(
+                            enabled: _isNoLimited ? false : true,
+                            initialValue: _enteredTitle,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              suffixIcon: const Padding(
+                                padding: EdgeInsets.only(top: 14),
+                                child: Text('명'),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (_isNoLimited) {
+                                return null;
+                              }
+                              if (value == null || value.isEmpty) {
+                                return '인원 입력해주세요';
+                              }
+
+                              return null;
+                            },
+                            onSaved: (value) {
+                              _enteredNumOfPeople = value!;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(
                   height: 20,
                 ),
                 const InputLabel(text: '자세한 설명'),
+                const SizedBox(
+                  height: 10,
+                ),
                 TextFormField(
                   initialValue: _enteredDesc,
                   maxLength: 200,
                   maxLines: 6,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 30.0, horizontal: 10.0),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: _enteredDesc.isNotEmpty ? 15 : 30.0,
+                      horizontal: 10.0,
+                    ),
                     label: const Column(
                       children: [
                         Text(
@@ -218,6 +335,11 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
+                  onChanged: (val) {
+                    setState(() {
+                      _enteredDesc = val;
+                    });
+                  },
                   validator: (value) {
                     if (value == null ||
                         value.isEmpty ||
@@ -233,9 +355,9 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                const InputLabel(text: '시간 (일시는 당일 기준)'),
+                const InputLabel(text: '일시'),
                 const SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 Row(
                   children: [
@@ -321,6 +443,9 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                   height: 20,
                 ),
                 const InputLabel(text: '장소'),
+                const SizedBox(
+                  height: 10,
+                ),
                 TextFormField(
                   readOnly: true,
                   controller: locTextController,
@@ -333,23 +458,6 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(20),
-                      ),
-                      onPressed: !_loading ? _onCreateArticle : null,
-                      child: _loading
-                          ? const CircularProgressIndicator()
-                          : Text(
-                              !isUpdating ? '작성 완료' : '수정 완료',
-                              style: const TextStyle(
-                                fontSize: 20,
-                              ),
-                            )),
                 ),
               ],
             ),

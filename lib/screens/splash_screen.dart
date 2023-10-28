@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:running_mate/screens/auth.dart';
-import 'package:running_mate/screens/article_list.dart';
+import 'package:running_mate/screens/home.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
