@@ -146,6 +146,8 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -168,89 +170,84 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
               }),
         ],
       ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 300,
-            child: GoogleMapWidget(
-              center: LatLng(
-                _article.address!.lat,
-                _article.address!.lng,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 250,
+              child: GoogleMapWidget(
+                center: LatLng(
+                  _article.address!.lat,
+                  _article.address!.lng,
+                ),
+                markers: _markers.toSet(),
+                onMapCreated: _onMapCreated,
               ),
-              markers: _markers.toSet(),
-              onMapCreated: _onMapCreated,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(40),
-                      child: Image.network(
-                        widget.user.imageUrl,
-                        width: 50,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: Image.network(
+                          widget.user.imageUrl,
+                          width: 50,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Text(
-                      widget.user.name,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Container(
-                  decoration: const BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(color: Colors.grey, width: 1.0)),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        widget.user.name,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge!
+                            .copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Container(
+                    decoration: const BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(color: Colors.grey, width: 1.0)),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  SizedBox(
+                    width: screenWidth * 0.8,
+                    child: Text(
                       _article.title,
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                     ),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('${_article.date} ${_article.time}'),
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                Text(getTimeDifference),
-                const SizedBox(
-                  height: 15,
-                ),
-                Text(
-                  _article.desc,
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(),
-                ),
-              ],
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  Text(getTimeDifference),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  Text(
+                    _article.desc,
+                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

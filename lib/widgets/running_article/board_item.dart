@@ -41,14 +41,17 @@ class BoardItem extends StatelessWidget {
           child: IntrinsicHeight(
             child: Row(
               children: [
-                const Column(
+                Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '18:30',
+                      article.time,
                     ),
                     Text(
                       '(오늘)',
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          // fontSize:
+                          ),
                     ),
                   ],
                 ),

@@ -13,6 +13,8 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   var _enteredEmail;
   var _enteredPassword;
   @override
@@ -35,114 +37,128 @@ class _AuthScreenState extends State<AuthScreen> {
               height: 20,
             ),
             Form(
+                key: _formKey,
                 child: Column(
-              children: [
-                TextFormField(
-                  maxLength: 30,
-                  decoration: InputDecoration(
-                    label: const Text('Email'),
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '알맞은 이메일을 입력해주세요';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _enteredEmail = value;
-                  },
-                ),
-                TextFormField(
-                  maxLength: 30,
-                  decoration: InputDecoration(
-                    label: const Text('Password'),
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '알맞은 패스워드를 입력해주세요';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _enteredEmail = value;
-                  },
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(18),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                          12,
-                        ))),
-                    onPressed: () {},
-                    child: Text(
-                      '로그인',
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: Theme.of(context).colorScheme.primary),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  )),
-                  label: const Text('구글 로그인'),
-                  onPressed: () async {
-                    final result = await AuthService().signInWithGoogle();
-                    final user = FirebaseAuth.instance.currentUser;
-                    print('------------------login------------------------');
-                    if (result.user.email != null) {
-                      final userDetail =
-                          await AuthService().getUserInfo(user!.uid);
-                      if (userDetail['email'] == null) {
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(user.uid)
-                            .set({
-                          'email': result.user.email,
-                          'name': result.user.displayName,
-                          'imageUrl':
-                              result.additionalUserInfo.profile['picture'],
-                        });
-                      } else {
-                        if (!mounted) {
-                          return;
+                  children: [
+                    TextFormField(
+                      maxLength: 30,
+                      decoration: InputDecoration(
+                        label: const Text('Email'),
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '알맞은 이메일을 입력해주세요';
                         }
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) {
-                            return const HomeScreen();
-                          },
-                        ));
-                      }
-                    }
-                  },
-                  icon: SvgPicture.asset(
-                    'assets/icons/google.svg',
-                    height: 50,
-                    width: 50,
-                  ),
-                )
-              ],
-            ))
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _enteredEmail = value;
+                      },
+                    ),
+                    TextFormField(
+                      maxLength: 30,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        label: const Text('Password'),
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '알맞은 패스워드를 입력해주세요';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _enteredPassword = value;
+                      },
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(18),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                              12,
+                            ))),
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            final credential = await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                    email: _enteredEmail,
+                                    password: _enteredPassword);
+
+                            print(credential);
+                          }
+                        },
+                        child: Text(
+                          '로그인',
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: Theme.of(context).colorScheme.primary),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      )),
+                      label: const Text('구글 로그인'),
+                      onPressed: () async {
+                        final result = await AuthService().signInWithGoogle();
+                        final user = FirebaseAuth.instance.currentUser;
+                        print(
+                            '------------------login------------------------');
+                        if (result.user.email != null) {
+                          final userDetail =
+                              await AuthService().getUserInfo(user!.uid);
+                          if (userDetail['email'] == null) {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user.uid)
+                                .set({
+                              'email': result.user.email,
+                              'name': result.user.displayName,
+                              'imageUrl':
+                                  result.additionalUserInfo.profile['picture'],
+                            });
+                          } else {
+                            if (!mounted) {
+                              return;
+                            }
+                            Navigator.of(context)
+                                .pushReplacement(MaterialPageRoute(
+                              builder: (context) {
+                                return const HomeScreen();
+                              },
+                            ));
+                          }
+                        }
+                      },
+                      icon: SvgPicture.asset(
+                        'assets/icons/google.svg',
+                        height: 50,
+                        width: 50,
+                      ),
+                    )
+                  ],
+                ))
           ],
         ),
       ),

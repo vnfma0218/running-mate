@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:running_mate/screens/article_list.dart';
+import 'package:running_mate/screens/auth.dart';
 import 'package:running_mate/screens/my_page.dart';
 import 'package:running_mate/screens/new_article.dart';
 import 'package:running_mate/widgets/bottom_nav_bar.dart';
@@ -79,6 +80,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         _selectedIndex = 0;
                       });
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => const AuthScreen(),
+                      ));
                     }
                   }),
           ],

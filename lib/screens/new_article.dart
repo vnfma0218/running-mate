@@ -84,6 +84,8 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
     // print(_selectedCoords.);
     _formattedAddress = await _getPlaceAddress(
         _selectedCoords!.latitude, _selectedCoords!.longitude);
+
+    print('_formattedAddress: $_formattedAddress');
     locTextController.text = result['text'];
   }
 
@@ -92,6 +94,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${dotenv.env['google_api_key']}&language=ko');
 
     final response = await http.get(url);
+    print('response: ${jsonDecode(response.body)['results'][0]}');
 
     return jsonDecode(response.body)['results'][0]['formatted_address'];
   }
