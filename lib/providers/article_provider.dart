@@ -44,6 +44,10 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     state.articleList = newList;
   }
 
+  void resetArticleList() {
+    state.articleList = [];
+  }
+
   void addArticleList(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
     final newArticles = loadedArticles.map(

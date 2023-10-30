@@ -2,9 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:running_mate/screens/article_list.dart';
 import 'package:running_mate/screens/auth.dart';
-import 'package:running_mate/screens/my_page.dart';
+import 'package:running_mate/screens/my_page/my_page.dart';
 import 'package:running_mate/screens/new_article.dart';
+import 'package:running_mate/services/auth_service.dart';
 import 'package:running_mate/widgets/bottom_nav_bar.dart';
+import 'package:running_mate/widgets/ui_elements/alert_dialog.dart';
 
 const myPageDropDownInfo = [
   {"text": '로그아웃', "value": 'logout'},
@@ -23,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Map<String, dynamic>> _children = [
     {"widget": const ArticleListScreen(), "title": 'Today\'s Run'},
     {"widget": const ArticleListScreen(), "title": '기록'},
-    {"widget": const MyPageScreen(), "title": 'My Page'}
+    {"widget": const MyPageScreen(), "title": '프로필'}
   ];
   void _onItemTapped(int index) {
     setState(() {
@@ -32,20 +34,48 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onNewArticle(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
+    print(AuthService().getUserInfo(null));
+    if (AuthService().isLoggedIn()) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) {
+            return const NewArticleScreen();
+          },
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
         builder: (context) {
-          return const NewArticleScreen();
+          return AlertDialogWidget(
+            title: '게시글 작성',
+            content: '로그인이 필요한 서비스입니다. \n로그인 하시겠습니까?',
+            confirmBtnText: '확인',
+            confirmCb: () => {
+              Navigator.of(context).pop(),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AuthScreen(),
+                ),
+              ),
+            },
+          );
         },
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(_children[_selectedIndex]['title']),
+          title: Text(
+            _children[_selectedIndex]['title'],
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge!
+                .copyWith(fontWeight: FontWeight.bold),
+          ),
           actions: [
             if (_selectedIndex == 0)
               Padding(

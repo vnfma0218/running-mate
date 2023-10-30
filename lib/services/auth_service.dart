@@ -23,20 +23,35 @@ class AuthService {
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
-  getUserInfo(String uid) {
-    final userDetail = FirebaseFirestore.instance
+  getUserInfo(String? userId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final userDetail = await FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(userId ?? user!.uid)
         .get()
         .then((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      return {
-        "email": data['email'],
-        "name": data['name'],
-        "imageUrl": data['imageUrl']
-      };
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          "id": userId ?? user!.uid,
+          "email": data['email'],
+          "name": data['name'],
+          "imageUrl": data['imageUrl']
+        };
+      } else {
+        return null;
+      }
     });
 
     return userDetail;
+  }
+
+  isLoggedIn() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

@@ -14,19 +14,21 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool isLogin = true;
 
   var _enteredEmail;
   var _enteredPassword;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(
-              height: 100,
+              height: 20,
             ),
             SvgPicture.asset(
               'assets/icons/run.svg',
@@ -43,7 +45,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     TextFormField(
                       maxLength: 30,
                       decoration: InputDecoration(
-                        label: const Text('Email'),
+                        label: const Text('이메일'),
                         floatingLabelBehavior: FloatingLabelBehavior.never,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -63,7 +65,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       maxLength: 30,
                       obscureText: true,
                       decoration: InputDecoration(
-                        label: const Text('Password'),
+                        label: const Text('비밀번호'),
                         floatingLabelBehavior: FloatingLabelBehavior.never,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -111,16 +113,27 @@ class _AuthScreenState extends State<AuthScreen> {
                       ),
                     ),
                     const SizedBox(
-                      height: 20,
+                      height: 5,
                     ),
-                    ElevatedButton.icon(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Text('계정이 없으신가요?'),
+                        TextButton(
+                          style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                          onPressed: () {},
+                          child: const Text('회원가입'),
+                        )
+                      ],
+                    ),
+                    ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 12,
                       )),
-                      label: const Text('구글 로그인'),
                       onPressed: () async {
+                        // google login
                         final result = await AuthService().signInWithGoogle();
                         final user = FirebaseAuth.instance.currentUser;
                         print(
@@ -128,7 +141,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         if (result.user.email != null) {
                           final userDetail =
                               await AuthService().getUserInfo(user!.uid);
-                          if (userDetail['email'] == null) {
+                          if (userDetail == null) {
                             await FirebaseFirestore.instance
                                 .collection('users')
                                 .doc(user.uid)
@@ -138,20 +151,19 @@ class _AuthScreenState extends State<AuthScreen> {
                               'imageUrl':
                                   result.additionalUserInfo.profile['picture'],
                             });
-                          } else {
-                            if (!mounted) {
-                              return;
-                            }
-                            Navigator.of(context)
-                                .pushReplacement(MaterialPageRoute(
-                              builder: (context) {
-                                return const HomeScreen();
-                              },
-                            ));
+                          } else {}
+                          if (!mounted) {
+                            return;
                           }
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                            builder: (context) {
+                              return const HomeScreen();
+                            },
+                          ));
                         }
                       },
-                      icon: SvgPicture.asset(
+                      child: SvgPicture.asset(
                         'assets/icons/google.svg',
                         height: 50,
                         width: 50,

@@ -23,8 +23,8 @@ class _SplashScreenState extends State<SplashScreen>
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
         return authencatiedUser != null && authencatiedUser.emailVerified
-            ? const HomeScreen()
-            : const AuthScreen();
+            ? const AuthScreen()
+            : const HomeScreen();
       }));
     });
   }

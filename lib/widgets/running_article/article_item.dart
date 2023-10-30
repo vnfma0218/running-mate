@@ -30,6 +30,7 @@ class _ArticleItemState extends State<ArticleItem> {
       builder: (context) => ArticleDetailScreen(
         article: widget.article,
         user: User(
+            id: userDetail['email'],
             email: userDetail['email'],
             imageUrl: userDetail['imageUrl'],
             name: userDetail['name']),

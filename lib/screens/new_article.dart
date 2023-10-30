@@ -276,7 +276,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                           ),
                           TextFormField(
                             enabled: _isNoLimited ? false : true,
-                            initialValue: _enteredTitle,
+                            initialValue: _enteredNumOfPeople,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly
@@ -320,6 +320,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                   initialValue: _enteredDesc,
                   maxLength: 200,
                   maxLines: 6,
+                  textInputAction: TextInputAction.done,
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.symmetric(
                       vertical: _enteredDesc.isNotEmpty ? 15 : 30.0,

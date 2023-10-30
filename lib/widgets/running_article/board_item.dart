@@ -11,6 +11,7 @@ class BoardItem extends StatelessWidget {
   void _onTapArticle(BuildContext context) async {
     final userDetail = await AuthService().getUserInfo(article.user);
     final user = User(
+      id: userDetail['email'],
       email: userDetail['email'],
       imageUrl: userDetail['imageUrl'],
       name: userDetail['name'],
@@ -35,57 +36,61 @@ class BoardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _onTapArticle(context),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: IntrinsicHeight(
-            child: Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      article.time,
-                    ),
-                    Text(
-                      '(오늘)',
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                          // fontSize:
-                          ),
-                    ),
-                  ],
-                ),
-                const VerticalDivider(
-                  thickness: 1,
-                  width: 20,
-                  color: Colors.black,
-                ),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        article.title,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                              fontWeight: FontWeight.bold,
+                        article.time,
+                      ),
+                      Text(
+                        '(오늘)',
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            // fontSize:
                             ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
                       ),
-                      const Row(
-                        children: [
-                          Text('10km'),
-                        ],
-                      ),
-                      const Text('서울특별시 영등포구')
                     ],
                   ),
-                ),
-                // const Spacer(),
-                const Icon(Icons.chevron_right)
-              ],
+                  const VerticalDivider(
+                    thickness: 1,
+                    width: 20,
+                    color: Colors.black,
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          article.title,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        const Row(
+                          children: [
+                            Text('10km'),
+                          ],
+                        ),
+                        const Text('서울특별시 영등포구')
+                      ],
+                    ),
+                  ),
+                  // const Spacer(),
+                  const Icon(Icons.chevron_right)
+                ],
+              ),
             ),
           ),
         ),

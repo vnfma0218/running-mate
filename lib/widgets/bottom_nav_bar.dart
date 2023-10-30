@@ -17,9 +17,13 @@ class BottomNavBar extends StatelessWidget {
           icon: Icon(Icons.stacked_bar_chart_outlined),
           label: '기록',
         ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.chat_rounded),
+        //   label: '채팅',
+        // ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.chat_rounded),
-          label: '채팅',
+          icon: Icon(Icons.person_outline),
+          label: '프로필',
         ),
       ],
       currentIndex: selectedIdx,

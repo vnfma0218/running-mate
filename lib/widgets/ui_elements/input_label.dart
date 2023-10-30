@@ -11,9 +11,10 @@ class InputLabel extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
+        textAlign: TextAlign.start,
       ),
     );
   }

@@ -12,6 +12,9 @@ class ArticleListScreen extends ConsumerStatefulWidget {
 }
 
 class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   DocumentSnapshot? lastDoc;
   bool isMoreData = true;
@@ -37,21 +40,30 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
   }
 
   void paginatedData() async {
-    if (!isMoreData) {
+    if (!isMoreData || isLoading) {
       return;
     }
+
     setState(() {
       isLoading = true;
     });
+
     final collectionRef = _firestore.collection('articles');
 
     late QuerySnapshot<Map<String, dynamic>> querySnapshot;
 
     if (lastDoc == null) {
-      querySnapshot = await collectionRef.limit(6).get();
+      querySnapshot = await collectionRef
+          .orderBy("createdAt", descending: true)
+          .limit(6)
+          .get();
+      ref.watch(meetingArticleProvider.notifier).resetArticleList();
     } else {
-      querySnapshot =
-          await collectionRef.limit(6).startAfterDocument(lastDoc!).get();
+      querySnapshot = await collectionRef
+          .orderBy("createdAt", descending: true)
+          .limit(6)
+          .startAfterDocument(lastDoc!)
+          .get();
     }
 
     ref
@@ -59,33 +71,47 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
         .addArticleList(querySnapshot.docs);
 
     isLoading = false;
-    setState(() {});
 
     lastDoc = querySnapshot.docs.last;
     if (querySnapshot.docs.length < 6) {
       isMoreData = false;
     }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    print('build article list');
     final articleList = ref.watch(meetingArticleProvider).articleList;
 
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-            controller: controller,
-            padding: const EdgeInsets.all(10),
-            itemCount: articleList.length,
-            itemBuilder: (context, index) {
-              final loadedArticles =
-                  ref.watch(meetingArticleProvider).articleList;
-
-              return BoardItem(
-                article: loadedArticles[index],
-              );
+          child: RefreshIndicator(
+            key: _refreshIndicatorKey,
+            onRefresh: () {
+              ref.watch(meetingArticleProvider.notifier).resetArticleList();
+              isMoreData = true;
+              lastDoc = null;
+              paginatedData();
+              return Future<void>.delayed(const Duration(seconds: 1));
             },
+            child: ListView.builder(
+              controller: controller,
+              padding: const EdgeInsets.symmetric(
+                vertical: 20,
+                horizontal: 10,
+              ),
+              itemCount: articleList.length,
+              itemBuilder: (context, index) {
+                final loadedArticles =
+                    ref.watch(meetingArticleProvider).articleList;
+
+                return BoardItem(
+                  article: loadedArticles[index],
+                );
+              },
+            ),
           ),
         ),
         isLoading
