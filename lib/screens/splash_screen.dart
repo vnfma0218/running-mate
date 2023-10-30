@@ -19,10 +19,11 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     final authencatiedUser = FirebaseAuth.instance.currentUser;
+    print('authencatiedUser: $authencatiedUser');
     // print('authencatiedUser:   $authencatiedUser');
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) {
-        return authencatiedUser != null && authencatiedUser.emailVerified
+        return authencatiedUser == null
             ? const AuthScreen()
             : const HomeScreen();
       }));

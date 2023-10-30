@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:running_mate/models/user.dart';
+import 'package:running_mate/widgets/ui_elements/image_input.dart';
 import 'package:running_mate/widgets/ui_elements/input_label.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -13,6 +17,9 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final nicknameController = TextEditingController();
+  File? _selectedImage;
+  UploadTask? _uploadTask;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -26,12 +33,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
+  Future<String> uploadFile() async {
+    setState(() {
+      isLoading = true;
+    });
+    final path = 'files/${widget.user.id}}';
+
+    final ref = FirebaseStorage.instance.ref().child(path);
+    _uploadTask = ref.putFile(_selectedImage!);
+
+    final snapshot = await _uploadTask!.whenComplete(() => null);
+    final urlDownload = await snapshot.ref.getDownloadURL();
+    return urlDownload;
+  }
+
   void _editProfile() async {
+    String? imageUrl = widget.user.imageUrl;
+    if (_selectedImage != null) {
+      imageUrl = await uploadFile();
+    }
+
     await FirebaseFirestore.instance
         .collection("users")
         .doc(widget.user.id)
         .update({
       "name": nicknameController.text,
+      "imageUrl": imageUrl,
+    });
+    setState(() {
+      isLoading = false;
+    });
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pop('saved');
+  }
+
+  void _selectImage(File image) {
+    setState(() {
+      _selectedImage = image;
     });
   }
 
@@ -62,11 +102,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(40),
-                  child: Image.network(
-                    widget.user.imageUrl,
-                    width: 80,
-                  ),
+                  borderRadius: BorderRadius.circular(50),
+                  child: _selectedImage != null
+                      ? Image.file(
+                          _selectedImage!,
+                          fit: BoxFit.cover,
+                          width: 100,
+                        )
+                      : isLoading
+                          ? const Icon(Icons.person)
+                          : widget.user.imageUrl != null
+                              ? Image.network(
+                                  widget.user.imageUrl!,
+                                  width: 100,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.person),
+                                )
+                              : const Icon(Icons.person),
                 ),
                 Positioned(
                   bottom: 1,
@@ -84,12 +136,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       color: Colors.white,
                     ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(2.0),
-                      child: Icon(
-                        Icons.add_a_photo,
-                        color: Colors.grey,
-                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: ImageInput(onPickImage: _selectImage),
                     ),
                   ),
                 )
@@ -102,18 +151,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const InputLabel(text: '닉네임'),
-                TextField(
-                  controller: nicknameController,
-                  decoration: InputDecoration(
-                    label: const Text('닉네임'),
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                Form(
+                  child: TextFormField(
+                    controller: nicknameController,
+                    decoration: InputDecoration(
+                      label: const Text('닉네임'),
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
+            if (isLoading) const CircularProgressIndicator()
           ],
         ),
       ),

@@ -193,10 +193,12 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(40),
-                        child: Image.network(
-                          widget.user.imageUrl,
-                          width: 50,
-                        ),
+                        child: widget.user.imageUrl != null
+                            ? Image.network(
+                                widget.user.imageUrl!,
+                                width: 50,
+                              )
+                            : const Icon(Icons.person),
                       ),
                       const SizedBox(
                         width: 10,

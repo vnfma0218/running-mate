@@ -24,6 +24,7 @@ class AuthService {
   }
 
   getUserInfo(String? userId) async {
+    print('get info');
     final user = FirebaseAuth.instance.currentUser;
     final userDetail = await FirebaseFirestore.instance
         .collection('users')
