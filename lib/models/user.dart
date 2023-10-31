@@ -1,5 +1,5 @@
-class User {
-  User(
+class UserModel {
+  UserModel(
       {required this.id,
       required this.name,
       required this.imageUrl,

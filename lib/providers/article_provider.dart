@@ -18,6 +18,8 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
               user: '',
               date: '',
               time: '',
+              distance: 0,
+              limitPeople: 0,
             ),
             articleList: []));
 
@@ -33,6 +35,8 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
       user: '',
       date: '',
       time: '',
+      distance: 0,
+      limitPeople: 0,
     );
   }
 
@@ -46,6 +50,15 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
 
   void resetArticleList() {
     state.articleList = [];
+  }
+
+  void deleteArticle(int index) {
+    final deletedList = [...state.articleList];
+    deletedList.removeAt(index);
+    state = ArticleState(
+      updateArticle: state.updateArticle,
+      articleList: deletedList.toList(),
+    );
   }
 
   void addArticleList(
@@ -63,6 +76,10 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
             desc: data['desc'],
             time: data['time'],
             date: data['date'],
+            distance: int.parse(data['distance']),
+            limitPeople: data['limitPeople'] != null
+                ? int.parse(data['limitPeople'])
+                : null,
             createdAt: createdAt,
             address: Address(
                 formattedAddress: data['location']['formattedAddress'],
@@ -72,7 +89,10 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
       },
     ).toList();
 
-    state.articleList = [...state.articleList, ...newArticles];
+    state = ArticleState(
+      updateArticle: state.updateArticle,
+      articleList: [...state.articleList, ...newArticles],
+    );
   }
 }
 

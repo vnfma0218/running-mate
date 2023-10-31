@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:running_mate/screens/article_list.dart';
-import 'package:running_mate/screens/auth.dart';
+import 'package:running_mate/screens/auth/login.dart';
 import 'package:running_mate/screens/my_page/my_page.dart';
 import 'package:running_mate/screens/new_article.dart';
 import 'package:running_mate/services/auth_service.dart';
@@ -34,7 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onNewArticle(BuildContext context) {
-    print(AuthService().getUserInfo(null));
     if (AuthService().isLoggedIn()) {
       Navigator.of(context).push(
         MaterialPageRoute(

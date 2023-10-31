@@ -49,7 +49,6 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
     });
 
     final collectionRef = _firestore.collection('articles');
-
     late QuerySnapshot<Map<String, dynamic>> querySnapshot;
 
     if (lastDoc == null) {
@@ -66,12 +65,18 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
           .get();
     }
 
+    if (querySnapshot.docs.isEmpty) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
     ref
-        .watch(meetingArticleProvider.notifier)
+        .read(meetingArticleProvider.notifier)
         .addArticleList(querySnapshot.docs);
 
     isLoading = false;
-
     lastDoc = querySnapshot.docs.last;
     if (querySnapshot.docs.length < 6) {
       isMoreData = false;
@@ -81,7 +86,6 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('build article list');
     final articleList = ref.watch(meetingArticleProvider).articleList;
 
     return Column(

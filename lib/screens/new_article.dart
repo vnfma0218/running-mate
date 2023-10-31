@@ -33,6 +33,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
   var _enteredNumOfPeople = '';
   var _enteredDesc = '';
   var _formattedAddress = '';
+  Timestamp? _createdAt;
   late String articleId;
 
   TimeOfDay _selectedTime = TimeOfDay.now();
@@ -55,9 +56,11 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
         articleId = updatingArticle.id;
         _enteredTitle = updatingArticle.title;
         _enteredDesc = updatingArticle.desc;
+        _enteredDistance = updatingArticle.distance.toString();
         locTextController.text = updatingArticle.address!.title;
         timeTextController.text = updatingArticle.time;
         dateTextController.text = updatingArticle.date;
+        _createdAt = updatingArticle.createdAt;
         _selectedCoords =
             LatLng(updatingArticle.address!.lat, updatingArticle.address!.lng);
       });
@@ -122,7 +125,8 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
           },
           "distance": _enteredDistance,
           "limitPeople": _isNoLimited ? null : _enteredNumOfPeople,
-          "createdAt": FieldValue.serverTimestamp(),
+          "createdAt": _createdAt,
+          "updatedAt": isUpdating ? FieldValue.serverTimestamp() : null,
           "date": dateTextController.text,
           "time": timeTextController.text,
         },
@@ -142,6 +146,8 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
               user: authencatiedUser.uid,
               date: dateTextController.text,
               time: timeTextController.text,
+              distance: int.parse(_enteredDistance),
+              limitPeople: int.parse(_enteredNumOfPeople),
               createdAt: Timestamp.fromDate(DateTime.now()),
               address: Address(
                 formattedAddress: '',
@@ -150,6 +156,21 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                 lng: _selectedCoords!.longitude,
               ),
             ));
+      } else {
+        ref.watch(meetingArticleProvider.notifier).resetArticleList();
+
+        QuerySnapshot<Map<String, dynamic>> querySnapshot =
+            await FirebaseFirestore.instance
+                .collection('articles')
+                .orderBy("createdAt", descending: true)
+                .limit(6)
+                .get();
+        ref
+            .watch(meetingArticleProvider.notifier)
+            .addArticleList(querySnapshot.docs);
+      }
+      if (!mounted) {
+        return;
       }
       Navigator.pop(context);
     }
@@ -184,7 +205,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: SizedBox(
-          height: 900,
+          height: 800,
           child: Form(
             key: _formKey,
             child: Column(
@@ -225,7 +246,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                             child: InputLabel(text: '거리 '),
                           ),
                           TextFormField(
-                            initialValue: _enteredTitle,
+                            initialValue: _enteredDistance,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly
@@ -355,9 +376,6 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
                   onSaved: (value) {
                     _enteredDesc = value!;
                   },
-                ),
-                const SizedBox(
-                  height: 20,
                 ),
                 const InputLabel(text: '일시'),
                 const SizedBox(

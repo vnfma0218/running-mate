@@ -29,7 +29,7 @@ class _ArticleItemState extends State<ArticleItem> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => ArticleDetailScreen(
         article: widget.article,
-        user: User(
+        user: UserModel(
             id: userDetail['email'],
             email: userDetail['email'],
             imageUrl: userDetail['imageUrl'],

@@ -15,12 +15,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   @override
   void initState() {
-    print('initState');
     super.initState();
     _userInfo = AuthService().getUserInfo(null);
   }
 
-  void _editProfilePage(User user) async {
+  void _editProfilePage(UserModel user) async {
     final result =
         await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return EditProfileScreen(user: user);
@@ -46,8 +45,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
     try {
       return Image.network(
         url,
-        height: 60.0,
-        width: 60.0,
+        height: 40.0,
+        width: 40.0,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => const Icon(Icons.person),
       );
@@ -90,7 +89,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           snapshot.data['name'],
                           style: Theme.of(context)
                               .textTheme
-                              .bodyLarge!
+                              .bodyMedium!
                               .copyWith(fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
@@ -99,7 +98,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             shape: const RoundedRectangleBorder(),
                           ),
                           onPressed: () {
-                            final user = User(
+                            final user = UserModel(
                               id: snapshot.data['id'],
                               email: snapshot.data['email'],
                               imageUrl: snapshot.data['imageUrl'],
@@ -107,7 +106,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             );
                             _editProfilePage(user);
                           },
-                          child: const Text('프로필 수정'),
+                          child: Text(
+                            '프로필 수정',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         )
                       ],
                     ),

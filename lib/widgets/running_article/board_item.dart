@@ -10,7 +10,7 @@ class BoardItem extends StatelessWidget {
 
   void _onTapArticle(BuildContext context) async {
     final userDetail = await AuthService().getUserInfo(article.user);
-    final user = User(
+    final user = UserModel(
       id: userDetail['email'],
       email: userDetail['email'],
       imageUrl: userDetail['imageUrl'],
@@ -21,7 +21,7 @@ class BoardItem extends StatelessWidget {
     }
   }
 
-  void _moveDetailPage(User user, BuildContext context) {
+  void _moveDetailPage(UserModel user, BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ArticleDetailScreen(

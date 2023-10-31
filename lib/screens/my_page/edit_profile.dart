@@ -9,7 +9,7 @@ import 'package:running_mate/widgets/ui_elements/input_label.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key, required this.user});
-  final User user;
+  final UserModel user;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();

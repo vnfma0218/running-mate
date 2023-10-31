@@ -10,6 +10,8 @@ class MeetingArticle {
     this.createdAt,
     required this.date,
     required this.time,
+    required this.distance,
+    this.limitPeople,
   });
 
   final String id;
@@ -19,6 +21,8 @@ class MeetingArticle {
   final String user;
   final String date;
   final String time;
+  final int distance;
+  int? limitPeople;
   Timestamp? createdAt;
 }
 

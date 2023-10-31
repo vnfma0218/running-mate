@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:running_mate/screens/auth.dart';
+import 'package:running_mate/screens/auth/login.dart';
 import 'package:running_mate/screens/home.dart';
 
 class SplashScreen extends StatefulWidget {

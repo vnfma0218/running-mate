@@ -13,6 +13,7 @@ import 'package:running_mate/providers/article_provider.dart';
 import 'package:running_mate/screens/new_article.dart';
 import 'package:running_mate/services/util_service.dart';
 import 'package:running_mate/widgets/google_map.dart';
+import 'package:running_mate/widgets/running_article/user_avatar.dart';
 import 'package:running_mate/widgets/ui_elements/alert_dialog.dart';
 
 const mapDropDownList = {
@@ -30,7 +31,7 @@ class ArticleDetailScreen extends ConsumerStatefulWidget {
       {super.key, required this.article, required this.user});
 
   final MeetingArticle article;
-  final User user;
+  final UserModel user;
 
   @override
   ConsumerState<ArticleDetailScreen> createState() =>
@@ -133,11 +134,58 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
         .collection('articles')
         .doc(widget.article.id)
         .delete();
+
     if (!mounted) {
       return;
     }
+    final articles = ref.watch(meetingArticleProvider).articleList;
+
+    ref
+        .read(meetingArticleProvider.notifier)
+        .deleteArticle(articles.indexWhere((a) => a.id == widget.article.id));
     Navigator.of(ctx).pop();
     Navigator.of(context).pop();
+  }
+
+  void _selectUserList() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 130,
+          color: Colors.white,
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text('참여 인원'),
+                SizedBox(
+                  height: 20,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 5, horizontal: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      UserAvatar(userName: 'name'),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      UserAvatar(userName: '유저명'),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      UserAvatar(userName: '유저명유저명유저명'),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   get getTimeDifference {
@@ -196,7 +244,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                         child: widget.user.imageUrl != null
                             ? Image.network(
                                 widget.user.imageUrl!,
-                                width: 50,
+                                width: 35,
                               )
                             : const Icon(Icons.person),
                       ),
@@ -207,8 +255,45 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                         widget.user.name,
                         style: Theme.of(context)
                             .textTheme
-                            .bodyLarge!
+                            .bodySmall!
                             .copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: _selectUserList,
+                        child: SizedBox(
+                          height: 24,
+                          width: 24 * 1.7,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.account_circle_rounded,
+                                  ),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.account_circle_sharp,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
