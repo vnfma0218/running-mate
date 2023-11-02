@@ -53,13 +53,13 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
 
     if (lastDoc == null) {
       querySnapshot = await collectionRef
-          .orderBy("createdAt", descending: true)
+          .orderBy("createdAt", descending: false)
           .limit(6)
           .get();
       ref.watch(meetingArticleProvider.notifier).resetArticleList();
     } else {
       querySnapshot = await collectionRef
-          .orderBy("createdAt", descending: true)
+          .orderBy("createdAt", descending: false)
           .limit(6)
           .startAfterDocument(lastDoc!)
           .get();
@@ -74,7 +74,7 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
 
     ref
         .read(meetingArticleProvider.notifier)
-        .addArticleList(querySnapshot.docs);
+        .addRemoteArticleList(querySnapshot.docs);
 
     isLoading = false;
     lastDoc = querySnapshot.docs.last;

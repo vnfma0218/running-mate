@@ -34,7 +34,7 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
   var _enteredDesc = '';
   var _formattedAddress = '';
   Timestamp? _createdAt;
-  late String articleId;
+  String? articleId;
 
   TimeOfDay _selectedTime = TimeOfDay.now();
   LatLng? _selectedCoords;
@@ -61,6 +61,8 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
         timeTextController.text = updatingArticle.time;
         dateTextController.text = updatingArticle.date;
         _createdAt = updatingArticle.createdAt;
+        _isNoLimited = updatingArticle.limitPeople == null;
+        _enteredNumOfPeople = updatingArticle.limitPeople.toString() ?? '';
         _selectedCoords =
             LatLng(updatingArticle.address!.lat, updatingArticle.address!.lng);
       });
@@ -68,7 +70,6 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
   }
 
   void onTabLocationField() async {
-    print('_selectedCoords: $_selectedCoords');
     final Map<String, dynamic>? result =
         await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
@@ -84,21 +85,16 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
     }
 
     _selectedCoords = result['coords'];
-    // print(_selectedCoords.);
     _formattedAddress = await _getPlaceAddress(
         _selectedCoords!.latitude, _selectedCoords!.longitude);
 
-    print('_formattedAddress: $_formattedAddress');
     locTextController.text = result['text'];
   }
 
   Future<String> _getPlaceAddress(double lat, double lng) async {
     final url = Uri.parse(
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${dotenv.env['google_api_key']}&language=ko');
-
     final response = await http.get(url);
-    print('response: ${jsonDecode(response.body)['results'][0]}');
-
     return jsonDecode(response.body)['results'][0]['formatted_address'];
   }
 
@@ -106,13 +102,12 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
     if (_formKey.currentState!.validate() && _selectedCoords != null) {
       _formKey.currentState!.save();
       _loading = true;
-
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       final authencatiedUser = FirebaseAuth.instance.currentUser!;
-      await firestore
-          .collection("articles")
-          .doc(isUpdating ? articleId : null)
-          .set(
+      DocumentReference docRef = FirebaseFirestore.instance
+          .collection('articles')
+          .doc(isUpdating ? articleId : null);
+      await docRef.set(
         {
           "user": authencatiedUser.uid,
           "title": _enteredTitle,
@@ -136,38 +131,31 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
       if (!mounted) {
         return;
       }
-      if (isUpdating) {
-        ref
-            .read(meetingArticleProvider.notifier)
-            .addUpdateArticle(MeetingArticle(
-              id: articleId,
-              title: _enteredTitle,
-              desc: _enteredDesc,
-              user: authencatiedUser.uid,
-              date: dateTextController.text,
-              time: timeTextController.text,
-              distance: int.parse(_enteredDistance),
-              limitPeople: int.parse(_enteredNumOfPeople),
-              createdAt: Timestamp.fromDate(DateTime.now()),
-              address: Address(
-                formattedAddress: '',
-                title: locTextController.text,
-                lat: _selectedCoords!.latitude,
-                lng: _selectedCoords!.longitude,
-              ),
-            ));
-      } else {
-        ref.watch(meetingArticleProvider.notifier).resetArticleList();
+      print('articleId: $articleId');
 
-        QuerySnapshot<Map<String, dynamic>> querySnapshot =
-            await FirebaseFirestore.instance
-                .collection('articles')
-                .orderBy("createdAt", descending: true)
-                .limit(6)
-                .get();
-        ref
-            .watch(meetingArticleProvider.notifier)
-            .addArticleList(querySnapshot.docs);
+      MeetingArticle article = MeetingArticle(
+        id: articleId ?? docRef.id,
+        title: _enteredTitle,
+        desc: _enteredDesc,
+        user: authencatiedUser.uid,
+        date: dateTextController.text,
+        time: timeTextController.text,
+        distance: int.parse(_enteredDistance),
+        limitPeople: _enteredNumOfPeople.isNotEmpty
+            ? int.parse(_enteredNumOfPeople)
+            : null,
+        createdAt: Timestamp.fromDate(DateTime.now()),
+        address: Address(
+          formattedAddress: '',
+          title: locTextController.text,
+          lat: _selectedCoords!.latitude,
+          lng: _selectedCoords!.longitude,
+        ),
+      );
+      if (isUpdating) {
+        ref.read(meetingArticleProvider.notifier).addUpdateArticle(article);
+      } else {
+        ref.read(meetingArticleProvider.notifier).addCreatedArticle(article);
       }
       if (!mounted) {
         return;

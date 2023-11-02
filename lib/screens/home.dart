@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:running_mate/models/user.dart';
+import 'package:running_mate/providers/user_provider.dart';
 import 'package:running_mate/screens/article_list.dart';
 import 'package:running_mate/screens/auth/login.dart';
 import 'package:running_mate/screens/my_page/my_page.dart';
@@ -13,20 +16,42 @@ const myPageDropDownInfo = [
   {"text": '설정', "value": 'setting'},
 ];
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
+
   final List<Map<String, dynamic>> _children = [
     {"widget": const ArticleListScreen(), "title": 'Today\'s Run'},
     {"widget": const ArticleListScreen(), "title": '기록'},
     {"widget": const MyPageScreen(), "title": '프로필'}
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _setUserInfo();
+  }
+
+  void _setUserInfo() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final user = await AuthService().getUserInfo(null);
+      UserModel userModel = UserModel(
+          id: user['id'],
+          name: user['name'],
+          imageUrl: user['imageUrl'],
+          email: user['email']);
+      ref.read(userProvider.notifier).setUserInfo(userModel);
+    }
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -102,13 +127,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(item['text']!),
                       )
                   ],
-                  onChanged: (value) {
+                  onChanged: (value) async {
                     if (value == 'logout') {
-                      print('로그아웃 하기');
-                      FirebaseAuth.instance.signOut();
-                      setState(() {
-                        _selectedIndex = 0;
-                      });
+                      await FirebaseAuth.instance.signOut();
+                      // setState(() {
+                      //   _selectedIndex = 0;
+                      // });
+                      if (!mounted) {
+                        return;
+                      }
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => const AuthScreen(),
                       ));

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:running_mate/models/user.dart';
 
 class MeetingArticle {
   MeetingArticle({
@@ -11,6 +12,7 @@ class MeetingArticle {
     required this.date,
     required this.time,
     required this.distance,
+    this.joinPeople,
     this.limitPeople,
   });
 
@@ -18,6 +20,7 @@ class MeetingArticle {
   final String title;
   final String desc;
   Address? address;
+  List<JoinUserModel>? joinPeople;
   final String user;
   final String date;
   final String time;

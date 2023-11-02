@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:running_mate/models/meeting_article.dart';
+import 'package:running_mate/models/user.dart';
 
 class ArticleState {
   ArticleState({required this.updateArticle, required this.articleList});
@@ -25,6 +26,13 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
 
   void addUpdateArticle(MeetingArticle article) {
     state.updateArticle = article;
+    state.articleList[state.articleList
+        .indexWhere((element) => element.id == article.id)] = article;
+
+    state = ArticleState(
+      updateArticle: state.updateArticle,
+      articleList: state.articleList,
+    );
   }
 
   void resetUpdatingArticle() {
@@ -45,7 +53,10 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     newList[newList.indexWhere((element) => element.id == article.id)] =
         article;
 
-    state.articleList = newList;
+    state = ArticleState(
+      updateArticle: state.updateArticle,
+      articleList: newList,
+    );
   }
 
   void resetArticleList() {
@@ -61,7 +72,15 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     );
   }
 
-  void addArticleList(
+  void addCreatedArticle(MeetingArticle article) {
+    final articleList = [article, ...state.articleList];
+    state = ArticleState(
+      updateArticle: state.updateArticle,
+      articleList: articleList,
+    );
+  }
+
+  void addRemoteArticleList(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
     final newArticles = loadedArticles.map(
       (e) {
@@ -76,6 +95,15 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
             desc: data['desc'],
             time: data['time'],
             date: data['date'],
+            joinPeople: data['joinPeople'] != null
+                ? (data['joinPeople'] as List<dynamic>)
+                    .map((e) => JoinUserModel(
+                          id: e['id'],
+                          imageUrl: e['imageUrl'],
+                          name: e['name'],
+                        ))
+                    .toList()
+                : null,
             distance: int.parse(data['distance']),
             limitPeople: data['limitPeople'] != null
                 ? int.parse(data['limitPeople'])

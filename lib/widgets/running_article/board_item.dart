@@ -1,32 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:running_mate/models/meeting_article.dart';
-import 'package:running_mate/models/user.dart';
 import 'package:running_mate/screens/article_detail.dart';
-import 'package:running_mate/services/auth_service.dart';
 
-class BoardItem extends StatelessWidget {
+class BoardItem extends StatefulWidget {
   const BoardItem({super.key, required this.article});
   final MeetingArticle article;
 
+  @override
+  State<BoardItem> createState() => _BoardItemState();
+}
+
+class _BoardItemState extends State<BoardItem> {
+  bool _isButtonTapped = false;
+
   void _onTapArticle(BuildContext context) async {
-    final userDetail = await AuthService().getUserInfo(article.user);
-    final user = UserModel(
-      id: userDetail['email'],
-      email: userDetail['email'],
-      imageUrl: userDetail['imageUrl'],
-      name: userDetail['name'],
-    );
-    if (context.mounted) {
-      _moveDetailPage(user, context);
+    if (!_isButtonTapped) {
+      _isButtonTapped = true; // make it true when clicked
+
+      if (context.mounted) {
+        _moveDetailPage(context);
+        _isButtonTapped = false;
+      }
     }
   }
 
-  void _moveDetailPage(UserModel user, BuildContext context) {
+  void _moveDetailPage(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => ArticleDetailScreen(
-          article: article,
-          user: user,
+          article: widget.article,
         ),
       ),
     );
@@ -48,7 +50,7 @@ class BoardItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        article.time,
+                        widget.article.time,
                       ),
                       Text(
                         '(오늘)',
@@ -70,7 +72,7 @@ class BoardItem extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          article.title,
+                          widget.article.title,
                           style:
                               Theme.of(context).textTheme.bodyMedium!.copyWith(
                                     fontWeight: FontWeight.bold,
