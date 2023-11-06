@@ -164,12 +164,32 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
                           ListView.builder(
                             itemCount: joinedMeets.length,
                             itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return Column(
+                                  children: [
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    BoardItem(article: joinedMeets[index])
+                                  ],
+                                );
+                              }
                               return BoardItem(article: joinedMeets[index]);
                             },
                           ),
                           ListView.builder(
                             itemCount: myMeets.length,
                             itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return Column(
+                                  children: [
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    BoardItem(article: myMeets[index])
+                                  ],
+                                );
+                              }
                               return BoardItem(article: myMeets[index]);
                             },
                           ),

@@ -5,6 +5,7 @@ import 'package:running_mate/models/user.dart';
 import 'package:running_mate/providers/user_provider.dart';
 import 'package:running_mate/screens/article_list.dart';
 import 'package:running_mate/screens/auth/login.dart';
+import 'package:running_mate/screens/calendar/calendar_record.dart';
 import 'package:running_mate/screens/my_page/my_page.dart';
 import 'package:running_mate/screens/new_article.dart';
 import 'package:running_mate/services/auth_service.dart';
@@ -16,6 +17,17 @@ const myPageDropDownInfo = [
   {"text": '설정', "value": 'setting'},
 ];
 
+enum PageType {
+  articles(0, 'articles'),
+  record(1, 'record'),
+  mypage(2, 'mypage');
+
+  const PageType(this.number, this.value);
+
+  final int number;
+  final String value;
+}
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -25,10 +37,11 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
+  final TextEditingController _controller = TextEditingController();
 
   final List<Map<String, dynamic>> _children = [
     {"widget": const ArticleListScreen(), "title": 'Today\'s Run'},
-    {"widget": const ArticleListScreen(), "title": '기록'},
+    {"widget": const CalendarScreen(), "title": '기록'},
     {"widget": const MyPageScreen(), "title": '프로필'}
   ];
 
@@ -101,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 .copyWith(fontWeight: FontWeight.bold),
           ),
           actions: [
-            if (_selectedIndex == 0)
+            if (_selectedIndex == PageType.articles.number)
               Padding(
                 padding: const EdgeInsets.only(right: 10),
                 child: GestureDetector(
@@ -116,7 +129,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
-            if (_selectedIndex == 2)
+            if (_selectedIndex == PageType.mypage.number)
               DropdownButton(
                   icon: const Icon(Icons.more_vert),
                   underline: const SizedBox.shrink(),
@@ -143,9 +156,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   }),
           ],
         ),
-        floatingActionButton: _selectedIndex == 0
+        floatingActionButton: _selectedIndex == PageType.articles.number
             ? FloatingActionButton(
-                onPressed: () => _onNewArticle(context),
+                onPressed: () {
+                  if (_selectedIndex == PageType.articles.number) {
+                    _onNewArticle(context);
+                  }
+                },
                 shape: const CircleBorder(),
                 child: const Icon(Icons.add),
               )
