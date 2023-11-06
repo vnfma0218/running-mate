@@ -1,22 +1,60 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:running_mate/models/user.dart';
+import 'package:running_mate/providers/article_provider.dart';
+import 'package:running_mate/providers/user_provider.dart';
 import 'package:running_mate/screens/my_page/edit_profile.dart';
 import 'package:running_mate/services/auth_service.dart';
+import 'package:running_mate/widgets/running_article/board_item.dart';
 
-class MyPageScreen extends StatefulWidget {
+class MyPageScreen extends ConsumerStatefulWidget {
   const MyPageScreen({super.key});
 
   @override
-  State<MyPageScreen> createState() => _MyPageScreenState();
+  ConsumerState<MyPageScreen> createState() => _MyPageScreenState();
 }
 
-class _MyPageScreenState extends State<MyPageScreen> {
+class _MyPageScreenState extends ConsumerState<MyPageScreen>
+    with TickerProviderStateMixin {
   late Future<dynamic> _userInfo;
+  late final TabController _tabController;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _userInfo = AuthService().getUserInfo(null);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _getMeetingHistories();
+  }
+
+  void _getMeetingHistories() async {
+    final userId = ref.watch(userProvider)!.id;
+
+    final collectionRef = _firestore.collection('articles');
+    final myMeetssnapshot =
+        await collectionRef.where('user', isEqualTo: userId).get();
+    final joinedMeets =
+        await collectionRef.where('joinUesrIds', arrayContains: userId).get();
+
+    ref
+        .read(meetingArticleProvider.notifier)
+        .addMyMeetings(myMeetssnapshot.docs);
+    ref
+        .read(meetingArticleProvider.notifier)
+        .addJoinedMeetings(joinedMeets.docs);
   }
 
   void _editProfilePage(UserModel user) async {
@@ -57,6 +95,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   @override
   build(BuildContext context) {
+    final user = ref.watch(userProvider);
+    final myMeets = ref.watch(meetingArticleProvider).myMeets;
+    final joinedMeets = ref.watch(meetingArticleProvider).joinedMeets;
     return FutureBuilder(
         future: _userInfo,
         builder: (context, snapshot) {
@@ -81,12 +122,12 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        checkUrl(snapshot.data['imageUrl']),
+                        checkUrl(user!.imageUrl!),
                         const SizedBox(
                           width: 15,
                         ),
                         Text(
-                          snapshot.data['name'],
+                          user.name,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium!
@@ -98,12 +139,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             shape: const RoundedRectangleBorder(),
                           ),
                           onPressed: () {
-                            final user = UserModel(
-                              id: snapshot.data['id'],
-                              email: snapshot.data['email'],
-                              imageUrl: snapshot.data['imageUrl'],
-                              name: snapshot.data['name'],
-                            );
                             _editProfilePage(user);
                           },
                           child: Text(
@@ -113,6 +148,34 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         )
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    TabBar(
+                      controller: _tabController,
+                      tabs: const [
+                        Tab(text: '참여 목록'),
+                        Tab(text: '개설 목록'),
+                      ],
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          ListView.builder(
+                            itemCount: joinedMeets.length,
+                            itemBuilder: (context, index) {
+                              return BoardItem(article: joinedMeets[index]);
+                            },
+                          ),
+                          ListView.builder(
+                            itemCount: myMeets.length,
+                            itemBuilder: (context, index) {
+                              return BoardItem(article: myMeets[index]);
+                            },
+                          ),
+                        ],
+                      ),
+                    )
                   ],
                 ),
               ),

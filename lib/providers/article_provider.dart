@@ -4,25 +4,35 @@ import 'package:running_mate/models/meeting_article.dart';
 import 'package:running_mate/models/user.dart';
 
 class ArticleState {
-  ArticleState({required this.updateArticle, required this.articleList});
+  ArticleState({
+    required this.updateArticle,
+    required this.articleList,
+    required this.joinedMeets,
+    required this.myMeets,
+  });
   MeetingArticle updateArticle;
   List<MeetingArticle> articleList;
+  List<MeetingArticle> myMeets;
+  List<MeetingArticle> joinedMeets;
 }
 
 class MeetingArticleNotifier extends StateNotifier<ArticleState> {
   MeetingArticleNotifier()
       : super(ArticleState(
-            updateArticle: MeetingArticle(
-              id: '',
-              title: '',
-              desc: '',
-              user: '',
-              date: '',
-              time: '',
-              distance: 0,
-              limitPeople: 0,
-            ),
-            articleList: []));
+          updateArticle: MeetingArticle(
+            id: '',
+            title: '',
+            desc: '',
+            user: '',
+            date: '',
+            time: '',
+            distance: 0,
+            limitPeople: 0,
+          ),
+          articleList: [],
+          myMeets: [],
+          joinedMeets: [],
+        ));
 
   void addUpdateArticle(MeetingArticle article) {
     state.updateArticle = article;
@@ -32,6 +42,8 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: state.articleList,
+      myMeets: state.myMeets,
+      joinedMeets: state.joinedMeets,
     );
   }
 
@@ -56,6 +68,8 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: newList,
+      myMeets: state.myMeets,
+      joinedMeets: state.joinedMeets,
     );
   }
 
@@ -69,6 +83,8 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: deletedList.toList(),
+      myMeets: state.myMeets,
+      joinedMeets: state.joinedMeets,
     );
   }
 
@@ -77,51 +93,81 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: articleList,
+      myMeets: state.myMeets,
+      joinedMeets: state.joinedMeets,
+    );
+  }
+
+  void addMyMeetings(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
+    final myMeets = fromJson(loadedArticles);
+    state = ArticleState(
+        updateArticle: state.updateArticle,
+        articleList: state.articleList,
+        myMeets: myMeets,
+        joinedMeets: state.joinedMeets);
+  }
+
+  void addJoinedMeetings(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
+    final joinedMeets = fromJson(loadedArticles);
+    state = ArticleState(
+      updateArticle: state.updateArticle,
+      articleList: state.articleList,
+      myMeets: state.myMeets,
+      joinedMeets: joinedMeets,
     );
   }
 
   void addRemoteArticleList(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
-    final newArticles = loadedArticles.map(
-      (e) {
-        final data = e.data();
-        final id = e.id;
-        Timestamp createdAt =
-            data['createdAt'] ?? Timestamp.fromDate(DateTime.now());
-        return MeetingArticle(
-            id: id,
-            user: data['user'],
-            title: data['title'],
-            desc: data['desc'],
-            time: data['time'],
-            date: data['date'],
-            joinPeople: data['joinPeople'] != null
-                ? (data['joinPeople'] as List<dynamic>)
-                    .map((e) => JoinUserModel(
-                          id: e['id'],
-                          imageUrl: e['imageUrl'],
-                          name: e['name'],
-                        ))
-                    .toList()
-                : null,
-            distance: int.parse(data['distance']),
-            limitPeople: data['limitPeople'] != null
-                ? int.parse(data['limitPeople'])
-                : null,
-            createdAt: createdAt,
-            address: Address(
-                formattedAddress: data['location']['formattedAddress'],
-                title: data['location']['name'],
-                lat: data['location']['lat'],
-                lng: data['location']['lng']));
-      },
-    ).toList();
+    final newArticles = fromJson(loadedArticles);
 
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: [...state.articleList, ...newArticles],
+      myMeets: state.myMeets,
+      joinedMeets: state.joinedMeets,
     );
   }
+}
+
+fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
+  final newArticles = articles.map(
+    (e) {
+      final data = e.data();
+      final id = e.id;
+      Timestamp createdAt =
+          data['createdAt'] ?? Timestamp.fromDate(DateTime.now());
+      return MeetingArticle(
+          id: id,
+          user: data['user'],
+          title: data['title'],
+          desc: data['desc'],
+          time: data['time'],
+          date: data['date'],
+          joinPeople: data['joinPeople'] != null
+              ? (data['joinPeople'] as List<dynamic>)
+                  .map((e) => JoinUserModel(
+                        id: e['id'],
+                        imageUrl: e['imageUrl'],
+                        name: e['name'],
+                      ))
+                  .toList()
+              : null,
+          distance: int.parse(data['distance']),
+          limitPeople: data['limitPeople'] != null
+              ? int.parse(data['limitPeople'])
+              : null,
+          createdAt: createdAt,
+          address: Address(
+              formattedAddress: data['location']['formattedAddress'],
+              title: data['location']['name'],
+              lat: data['location']['lat'],
+              lng: data['location']['lng']));
+    },
+  ).toList();
+  return newArticles;
 }
 
 final meetingArticleProvider =

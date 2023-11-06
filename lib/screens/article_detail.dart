@@ -237,6 +237,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                 name: curUser.name,
                 imageUrl: curUser.imageUrl!);
             List<JoinUserModel> joinPeople = [];
+            List<String> joinUesrIds = [];
 
             if (_article.joinPeople != null) {
               joinPeople = [..._article.joinPeople!];
@@ -249,10 +250,12 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             }
 
             final usersJson = joinPeople.map((e) => e.toJson()).toList();
+            joinUesrIds = joinPeople.map((e) => e.id).toList();
             await FirebaseFirestore.instance
                 .collection('articles')
                 .doc(_article.id)
-                .update({"joinPeople": usersJson}).then(
+                .update(
+                    {"joinPeople": usersJson, "joinUesrIds": joinUesrIds}).then(
               (_) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -283,7 +286,6 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    print('_article.joinPeople: ${_article.joinPeople}');
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -310,12 +312,12 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
       ),
       bottomNavigationBar: !_isMine
           ? Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 26),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(12),
                   ),
                   onPressed: _toggleJoin,
                   child: Text(
