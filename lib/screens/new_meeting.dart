@@ -13,14 +13,14 @@ import 'package:running_mate/screens/map.dart';
 import 'package:running_mate/widgets/ui_elements/input_label.dart';
 import 'package:http/http.dart' as http;
 
-class NewArticleScreen extends ConsumerStatefulWidget {
-  const NewArticleScreen({super.key});
+class NewMeetingScreen extends ConsumerStatefulWidget {
+  const NewMeetingScreen({super.key});
 
   @override
-  ConsumerState<NewArticleScreen> createState() => _NewArticleScreenState();
+  ConsumerState<NewMeetingScreen> createState() => _NewMeetingScreenState();
 }
 
-class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
+class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
   var isUpdating = false;
   final _formKey = GlobalKey<FormState>();
 
@@ -104,9 +104,8 @@ class _NewArticleScreenState extends ConsumerState<NewArticleScreen> {
       _loading = true;
       FirebaseFirestore firestore = FirebaseFirestore.instance;
       final authencatiedUser = FirebaseAuth.instance.currentUser!;
-      DocumentReference docRef = FirebaseFirestore.instance
-          .collection('articles')
-          .doc(isUpdating ? articleId : null);
+      DocumentReference docRef =
+          firestore.collection('articles').doc(isUpdating ? articleId : null);
       await docRef.set(
         {
           "user": authencatiedUser.uid,

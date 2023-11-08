@@ -5,9 +5,9 @@ import 'package:running_mate/models/user.dart';
 import 'package:running_mate/providers/user_provider.dart';
 import 'package:running_mate/screens/article_list.dart';
 import 'package:running_mate/screens/auth/login.dart';
-import 'package:running_mate/screens/calendar/calendar_record.dart';
+import 'package:running_mate/screens/calendar/event_calendar.dart';
 import 'package:running_mate/screens/my_page/my_page.dart';
-import 'package:running_mate/screens/new_article.dart';
+import 'package:running_mate/screens/new_meeting.dart';
 import 'package:running_mate/services/auth_service.dart';
 import 'package:running_mate/widgets/bottom_nav_bar.dart';
 import 'package:running_mate/widgets/ui_elements/alert_dialog.dart';
@@ -41,7 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final List<Map<String, dynamic>> _children = [
     {"widget": const ArticleListScreen(), "title": 'Today\'s Run'},
-    {"widget": const CalendarScreen(), "title": '기록'},
+    {"widget": const EventCalendarScreen(), "title": '기록'},
     {"widget": const MyPageScreen(), "title": '프로필'}
   ];
 
@@ -76,7 +76,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) {
-            return const NewArticleScreen();
+            return const NewMeetingScreen();
           },
         ),
       );
@@ -105,57 +105,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            _children[_selectedIndex]['title'],
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge!
-                .copyWith(fontWeight: FontWeight.bold),
-          ),
-          actions: [
-            if (_selectedIndex == PageType.articles.number)
-              Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: GestureDetector(
-                  onTap: () {},
-                  child: const Row(
-                    children: [
-                      Text('지도로 보기'),
-                      Icon(
-                        Icons.map,
-                      )
-                    ],
-                  ),
+        appBar: _selectedIndex != PageType.record.number
+            ? AppBar(
+                title: Text(
+                  _children[_selectedIndex]['title'],
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .copyWith(fontWeight: FontWeight.bold),
                 ),
-              ),
-            if (_selectedIndex == PageType.mypage.number)
-              DropdownButton(
-                  icon: const Icon(Icons.more_vert),
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    for (Map<String, String> item in myPageDropDownInfo)
-                      DropdownMenuItem<String>(
-                        value: item['value'],
-                        child: Text(item['text']!),
-                      )
-                  ],
-                  onChanged: (value) async {
-                    if (value == 'logout') {
-                      await FirebaseAuth.instance.signOut();
-                      // setState(() {
-                      //   _selectedIndex = 0;
-                      // });
-                      if (!mounted) {
-                        return;
-                      }
-                      Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) => const AuthScreen(),
-                      ));
-                    }
-                  }),
-          ],
-        ),
+                actions: [
+                  if (_selectedIndex == PageType.articles.number)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: const Row(
+                          children: [
+                            Text('지도로 보기'),
+                            Icon(
+                              Icons.map,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (_selectedIndex == PageType.mypage.number)
+                    DropdownButton(
+                        icon: const Icon(Icons.more_vert),
+                        underline: const SizedBox.shrink(),
+                        items: [
+                          for (Map<String, String> item in myPageDropDownInfo)
+                            DropdownMenuItem<String>(
+                              value: item['value'],
+                              child: Text(item['text']!),
+                            )
+                        ],
+                        onChanged: (value) async {
+                          if (value == 'logout') {
+                            await FirebaseAuth.instance.signOut();
+                            // setState(() {
+                            //   _selectedIndex = 0;
+                            // });
+                            if (!mounted) {
+                              return;
+                            }
+                            Navigator.of(context)
+                                .pushReplacement(MaterialPageRoute(
+                              builder: (context) => const AuthScreen(),
+                            ));
+                          }
+                        }),
+                ],
+              )
+            : null,
         floatingActionButton: _selectedIndex == PageType.articles.number
             ? FloatingActionButton(
                 onPressed: () {

@@ -12,7 +12,7 @@ import 'package:running_mate/models/meeting_article.dart';
 import 'package:running_mate/models/user.dart';
 import 'package:running_mate/providers/article_provider.dart';
 import 'package:running_mate/providers/user_provider.dart';
-import 'package:running_mate/screens/new_article.dart';
+import 'package:running_mate/screens/new_meeting.dart';
 import 'package:running_mate/services/auth_service.dart';
 import 'package:running_mate/services/util_service.dart';
 import 'package:running_mate/widgets/google_map.dart';
@@ -129,7 +129,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
     ref.read(meetingArticleProvider.notifier).addUpdateArticle(_article);
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
-        return const NewArticleScreen();
+        return const NewMeetingScreen();
       },
     ));
 
