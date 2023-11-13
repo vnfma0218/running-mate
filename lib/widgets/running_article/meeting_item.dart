@@ -55,7 +55,7 @@ class _MeetingItemState extends State<MeetingItem> {
                           widget.article.time,
                         ),
                         Text(
-                          '(오늘)',
+                          widget.article.date,
                           style:
                               Theme.of(context).textTheme.bodySmall!.copyWith(
                                   // fontSize:

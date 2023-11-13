@@ -62,7 +62,9 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
         dateTextController.text = updatingArticle.date;
         _createdAt = updatingArticle.createdAt;
         _isNoLimited = updatingArticle.limitPeople == null;
-        _enteredNumOfPeople = updatingArticle.limitPeople.toString() ?? '';
+        _enteredNumOfPeople = updatingArticle.limitPeople == null
+            ? ''
+            : updatingArticle.limitPeople.toString();
         _selectedCoords =
             LatLng(updatingArticle.address!.lat, updatingArticle.address!.lng);
       });
@@ -118,7 +120,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
             "lng": _selectedCoords?.longitude,
           },
           "distance": _enteredDistance,
-          "limitPeople": _isNoLimited ? null : _enteredNumOfPeople,
+          "limitPeople": _isNoLimited ? '' : _enteredNumOfPeople,
           "createdAt": !isUpdating ? FieldValue.serverTimestamp() : _createdAt,
           "updatedAt": isUpdating ? FieldValue.serverTimestamp() : null,
           "date": dateTextController.text,
@@ -376,7 +378,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
                         controller: dateTextController,
                         onTap: () async {
                           DateTime now = DateTime.now();
-                          DateTime tomorrow = now.add(const Duration(days: 1));
+                          DateTime tomorrow = now.add(const Duration(days: 7));
 
                           var date = await showDatePicker(
                             initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -384,7 +386,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
                             initialDate: now,
                             firstDate: now,
                             lastDate: tomorrow,
-                            helpText: '날짜는 다음날까지 선택할 수 있습니다.',
+                            helpText: '날짜는 일주일 내에서 선택할 수 있습니다.',
                           );
 
                           if (date != null) {

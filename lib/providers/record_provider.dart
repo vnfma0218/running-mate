@@ -4,8 +4,12 @@ import 'package:running_mate/models/record.dart';
 import 'package:running_mate/providers/user_provider.dart';
 
 class DateRange {
-  DateRange({required this.startDate, required this.endDate});
+  DateRange(
+      {required this.startDate,
+      required this.endDate,
+      required this.isChanged});
 
+  final bool isChanged;
   final DateTime startDate;
   final DateTime endDate;
 }
@@ -37,8 +41,11 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
             recordList: [],
             recordHistories: [],
             sumOfData: SumOfData(totalDistance: 0, totalHour: 0),
-            dateRange:
-                DateRange(startDate: DateTime.now(), endDate: DateTime.now()),
+            dateRange: DateRange(
+              startDate: DateTime.now(),
+              endDate: DateTime.now(),
+              isChanged: false,
+            ),
           ),
         );
   final String userId;
@@ -89,9 +96,9 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
         .where('user', isEqualTo: userId)
         .where("date",
             isGreaterThanOrEqualTo:
-                DateTime(start.year, start.month, start.day))
+                DateTime.utc(start.year, start.month, start.day))
         .where("date",
-            isLessThanOrEqualTo: DateTime(end.year, end.month, end.day))
+            isLessThanOrEqualTo: DateTime.utc(end.year, end.month, end.day + 1))
         .get();
 
     final recordList = loadedRecords.docs.map((record) {
@@ -100,41 +107,46 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       return RecordModel.fromJson(data);
     }).toList();
 
-    final startDate = DateTime.utc(date.year, date.month, 1);
-    final endDate = DateTime.utc(date.year, date.month, date.day);
+    final startDate = DateTime.utc(start.year, start.month, start.day);
+    final endDate = DateTime.utc(end.year, end.month, end.day);
 
     state = RecordProviderState(
       recordList: state.recordList,
       recordHistories: recordList,
-      dateRange: DateRange(startDate: startDate, endDate: endDate),
+      dateRange:
+          DateRange(startDate: startDate, endDate: endDate, isChanged: false),
       sumOfData: state.sumOfData,
     );
   }
 
-  void getSummary(DateTime start, DateTime end) async {
+  void getMonthSummary(DateTime date) async {
     final loadedRecords = await firestore
         .collection('records')
         .where('user', isEqualTo: userId)
         .where("date",
-            isGreaterThanOrEqualTo:
-                DateTime(start.year, start.month, start.day))
+            isGreaterThanOrEqualTo: DateTime(date.year, date.month, 1))
         .where("date",
-            isLessThanOrEqualTo: DateTime(end.year, end.month, end.day))
+            isLessThanOrEqualTo: DateTime(date.year, date.month + 1, 0))
         .get();
 
     num totalHour = 0;
+    num totalMin = 0;
     num totalDistance = 0;
 
     for (var record in loadedRecords.docs) {
       final data = record.data();
       totalHour += data['hour'];
+      totalMin += data['miniutes'];
       totalDistance += data['distance'];
     }
+
     state = RecordProviderState(
       recordList: state.recordList,
       recordHistories: state.recordHistories,
       dateRange: state.dateRange,
-      sumOfData: SumOfData(totalDistance: totalDistance, totalHour: totalHour),
+      sumOfData: SumOfData(
+          totalDistance: totalDistance,
+          totalHour: totalHour + (totalMin / 60).floor()),
     );
   }
 

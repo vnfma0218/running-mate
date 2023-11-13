@@ -158,9 +158,9 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
                   .toList()
               : null,
           distance: int.parse(data['distance']),
-          limitPeople: data['limitPeople'] != null
-              ? int.parse(data['limitPeople'])
-              : null,
+          limitPeople: data['limitPeople'].toString().isEmpty
+              ? null
+              : int.parse(data['limitPeople']),
           createdAt: createdAt,
           address: Address(
               formattedAddress: data['location']['formattedAddress'],

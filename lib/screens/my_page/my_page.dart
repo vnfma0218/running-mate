@@ -144,12 +144,33 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.run_circle_outlined,
+                          Icons.article_outlined,
                           size: 30,
                         ),
                         const SizedBox(width: 10),
                         Text(
                           '기록 관리',
+                          style: Theme.of(context).textTheme.bodyLarge!,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const RecordHistoriesScreen(),
+                      ));
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.mail_outlined,
+                          size: 30,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '공지사항',
                           style: Theme.of(context).textTheme.bodyLarge!,
                         ),
                       ],

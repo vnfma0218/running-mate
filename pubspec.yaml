@@ -50,6 +50,7 @@ dependencies:
   intl: ^0.18.0
   flutter_localizations:
     sdk: flutter
+  month_picker_dialog: ^2.2.1
 
 dev_dependencies:
   flutter_test:
