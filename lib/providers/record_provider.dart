@@ -3,35 +3,97 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:running_mate/models/record.dart';
 import 'package:running_mate/providers/user_provider.dart';
 
+class DateRange {
+  DateRange({required this.startDate, required this.endDate});
+
+  final DateTime startDate;
+  final DateTime endDate;
+}
+
 class RecordProviderState {
-  RecordProviderState({required this.recordList});
+  RecordProviderState(
+      {required this.recordList,
+      required this.recordHistories,
+      required this.dateRange});
   final List<RecordModel> recordList;
+  final List<RecordModel> recordHistories;
+  final DateRange dateRange;
 }
 
 class RecordNotifier extends StateNotifier<RecordProviderState> {
-  RecordNotifier(this.userId) : super(RecordProviderState(recordList: []));
+  RecordNotifier(this.userId)
+      : super(RecordProviderState(
+          recordList: [],
+          recordHistories: [],
+          dateRange:
+              DateRange(startDate: DateTime.now(), endDate: DateTime.now()),
+        ));
   final String userId;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  DateTime date = DateTime.now();
+
+  void setDateRange(DateRange dateRange) {
+    state = RecordProviderState(
+      recordList: state.recordList,
+      recordHistories: state.recordHistories,
+      dateRange: dateRange,
+    );
+  }
 
   Future saveRecord(RecordModel recordModel) async {
-    await firestore
-        .collection("records")
-        .doc(recordModel.id)
-        .set({...recordModel.toJson(), 'user': userId});
-
     List<RecordModel> recordList = [];
     if (recordModel.id != null) {
+      await firestore
+          .collection("records")
+          .doc(recordModel.id)
+          .set({...recordModel.toJson(), 'user': userId});
+
       state.recordList[state.recordList
           .indexWhere((element) => element.id == recordModel.id)] = recordModel;
       recordList = [...state.recordList];
     } else {
+      final document = await firestore
+          .collection("records")
+          .add({...recordModel.toJson(), 'user': userId});
+      recordModel.id = document.id;
       recordList = [...state.recordList, recordModel];
     }
 
-    state = RecordProviderState(recordList: recordList);
+    state = RecordProviderState(
+      recordList: recordList,
+      recordHistories: state.recordHistories,
+      dateRange: state.dateRange,
+    );
   }
 
-  void fetchRecords(DateTime? datetime) async {
+  void fetchRecordHistories(DateTime start, DateTime end) async {
+    final loadedRecords = await firestore
+        .collection('records')
+        .where('user', isEqualTo: userId)
+        .where("date",
+            isGreaterThanOrEqualTo:
+                DateTime(start.year, start.month, start.day))
+        .where("date",
+            isLessThanOrEqualTo: DateTime(end.year, end.month, end.day))
+        .get();
+
+    final recordList = loadedRecords.docs.map((record) {
+      final data = record.data();
+      data['id'] = record.id;
+      return RecordModel.fromJson(data);
+    }).toList();
+
+    final startDate = DateTime.utc(date.year, date.month, 1);
+    final endDate = DateTime.utc(date.year, date.month, date.day);
+
+    state = RecordProviderState(
+      recordList: state.recordList,
+      recordHistories: recordList,
+      dateRange: DateRange(startDate: startDate, endDate: endDate),
+    );
+  }
+
+  void fetchCalendarRecords(DateTime? datetime) async {
     final date = datetime ?? DateTime.now();
     final loadedRecords = await firestore
         .collection('records')
@@ -47,8 +109,11 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       data['id'] = record.id;
       return RecordModel.fromJson(data);
     }).toList();
+
     state = RecordProviderState(
       recordList: recordList,
+      recordHistories: state.recordHistories,
+      dateRange: state.dateRange,
     );
   }
 
@@ -64,6 +129,8 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
     newList.removeWhere((element) => element.id == id);
     state = RecordProviderState(
       recordList: newList,
+      recordHistories: state.recordHistories,
+      dateRange: state.dateRange,
     );
     return resultCode;
   }

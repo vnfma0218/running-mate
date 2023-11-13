@@ -28,8 +28,6 @@ class RecordItem extends ConsumerWidget {
   }
 
   void _deleteRecord(BuildContext context, WidgetRef ref) async {
-    print('record.id :${record.id}');
-
     final resultCode =
         await ref.read(recordProvider.notifier).deleteRecord(record.id!);
 
@@ -40,7 +38,7 @@ class RecordItem extends ConsumerWidget {
             content: Text('삭제하였습니다.'),
           ),
         );
-        ref.read(recordProvider.notifier).fetchRecords(null);
+        ref.read(recordProvider.notifier).fetchCalendarRecords(null);
       }
     }
   }

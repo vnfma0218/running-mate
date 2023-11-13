@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:running_mate/models/meeting_article.dart';
 import 'package:running_mate/screens/article_detail.dart';
 
-class BoardItem extends StatefulWidget {
-  const BoardItem({super.key, required this.article});
+class MeetingItem extends StatefulWidget {
+  const MeetingItem({super.key, required this.article});
   final MeetingArticle article;
 
   @override
-  State<BoardItem> createState() => _BoardItemState();
+  State<MeetingItem> createState() => _MeetingItemState();
 }
 
-class _BoardItemState extends State<BoardItem> {
+class _MeetingItemState extends State<MeetingItem> {
   bool _isButtonTapped = false;
 
   void _onTapArticle(BuildContext context) async {
@@ -46,19 +46,23 @@ class _BoardItemState extends State<BoardItem> {
             child: IntrinsicHeight(
               child: Row(
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.article.time,
-                      ),
-                      Text(
-                        '(오늘)',
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            // fontSize:
-                            ),
-                      ),
-                    ],
+                  SizedBox(
+                    width: 70,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.article.time,
+                        ),
+                        Text(
+                          '(오늘)',
+                          style:
+                              Theme.of(context).textTheme.bodySmall!.copyWith(
+                                  // fontSize:
+                                  ),
+                        ),
+                      ],
+                    ),
                   ),
                   const VerticalDivider(
                     thickness: 1,

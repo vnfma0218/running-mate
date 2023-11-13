@@ -34,7 +34,7 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
   void initState() {
     super.initState();
     _selectedDate = _focusedDay;
-    ref.read(recordProvider.notifier).fetchRecords(_focusedDay);
+    ref.read(recordProvider.notifier).fetchCalendarRecords(_focusedDay);
   }
 
   List<RecordModel> _listOfDayEvents(DateTime dateTime) {
@@ -51,6 +51,7 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
   void _submitRecord() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      print('_recordId: $_recordId');
 
       final record = RecordModel(
         id: _recordId,
@@ -103,7 +104,9 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                   children: [
                     const InputLabel(text: '거리'),
                     TextFormField(
-                      initialValue: _enteredDistance.toString(),
+                      initialValue: _enteredDistance != null
+                          ? _enteredDistance.toString()
+                          : '',
                       inputFormatters: <TextInputFormatter>[
                         FilteringTextInputFormatter.digitsOnly
                       ],
@@ -191,7 +194,8 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                     const SizedBox(height: 30),
                     const InputLabel(text: '메모'),
                     TextFormField(
-                      initialValue: _enteredMemo.toString(),
+                      initialValue:
+                          _enteredMemo != null ? _enteredMemo.toString() : '',
                       maxLength: 200,
                       maxLines: 6,
                       textInputAction: TextInputAction.done,
@@ -238,7 +242,7 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
   }
 
   getMapEvents(List<RecordModel> recordList) {
-    print('recordList: $recordList');
+    // print('recordList: $recordList');
     events = {};
     // final Map<String, List<RecordModel>> events = {};
     for (var element in recordList) {

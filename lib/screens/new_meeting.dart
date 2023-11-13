@@ -119,7 +119,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
           },
           "distance": _enteredDistance,
           "limitPeople": _isNoLimited ? null : _enteredNumOfPeople,
-          "createdAt": _createdAt,
+          "createdAt": !isUpdating ? FieldValue.serverTimestamp() : _createdAt,
           "updatedAt": isUpdating ? FieldValue.serverTimestamp() : null,
           "date": dateTextController.text,
           "time": timeTextController.text,

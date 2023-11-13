@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:running_mate/providers/article_provider.dart';
-import 'package:running_mate/widgets/running_article/board_item.dart';
+import 'package:running_mate/widgets/running_article/meeting_item.dart';
 
 class ArticleListScreen extends ConsumerStatefulWidget {
   const ArticleListScreen({super.key});
@@ -28,6 +28,7 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
 
     controller.addListener(() {
       if (controller.position.pixels == controller.position.maxScrollExtent) {
+        print('scroll detect');
         paginatedData();
       }
     });
@@ -53,14 +54,14 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
 
     if (lastDoc == null) {
       querySnapshot = await collectionRef
-          .orderBy("createdAt", descending: false)
-          .limit(6)
+          .orderBy("createdAt", descending: true)
+          .limit(10)
           .get();
       ref.watch(meetingArticleProvider.notifier).resetArticleList();
     } else {
       querySnapshot = await collectionRef
-          .orderBy("createdAt", descending: false)
-          .limit(6)
+          .orderBy("createdAt", descending: true)
+          .limit(10)
           .startAfterDocument(lastDoc!)
           .get();
     }
@@ -111,7 +112,7 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
                 final loadedArticles =
                     ref.watch(meetingArticleProvider).articleList;
 
-                return BoardItem(
+                return MeetingItem(
                   article: loadedArticles[index],
                 );
               },

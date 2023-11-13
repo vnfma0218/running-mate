@@ -1,5 +1,5 @@
 class RecordModel {
-  final String? id;
+  String? id;
   final int hour;
   final int miniutes;
   final int distance;

@@ -122,7 +122,9 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
   void addRemoteArticleList(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
     final newArticles = fromJson(loadedArticles);
-
+    for (var element in newArticles) {
+      print(element.createdAt);
+    }
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: [...state.articleList, ...newArticles],
