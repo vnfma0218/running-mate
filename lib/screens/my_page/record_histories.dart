@@ -23,6 +23,7 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
     final endDate = DateTime.utc(date.year, date.month, date.day);
 
     ref.read(recordProvider.notifier).fetchRecordHistories(startDate, endDate);
+    ref.read(recordProvider.notifier).getSummary(startDate, endDate);
   }
 
   _showCalendar(DateTime initialDate) async {
@@ -214,6 +215,7 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
   @override
   Widget build(BuildContext context) {
     final dateRange = ref.watch(recordProvider).dateRange;
+    final sumOfData = ref.watch(recordProvider).sumOfData;
     final recordHistories = ref.watch(recordProvider).recordHistories;
     var dateMappingRecords = getMapEvents(recordHistories);
     final dateList = dateMappingRecords.keys.toList();
@@ -242,7 +244,7 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
                           text: '이번달은',
                           style: Theme.of(context).textTheme.displaySmall!),
                       TextSpan(
-                        text: ' 10시간',
+                        text: ' ${sumOfData.totalHour}시간',
                         style: Theme.of(context)
                             .textTheme
                             .displaySmall!
@@ -261,7 +263,7 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
                         TextStyle(color: Theme.of(context).colorScheme.primary),
                     children: [
                       TextSpan(
-                        text: '10km',
+                        text: '${sumOfData.totalDistance}km',
                         style: Theme.of(context)
                             .textTheme
                             .displaySmall!

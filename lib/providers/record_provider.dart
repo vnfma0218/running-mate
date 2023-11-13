@@ -10,24 +10,37 @@ class DateRange {
   final DateTime endDate;
 }
 
+class SumOfData {
+  SumOfData({required this.totalHour, required this.totalDistance});
+
+  final num totalHour;
+  final num totalDistance;
+}
+
 class RecordProviderState {
-  RecordProviderState(
-      {required this.recordList,
-      required this.recordHistories,
-      required this.dateRange});
+  RecordProviderState({
+    required this.recordList,
+    required this.recordHistories,
+    required this.dateRange,
+    required this.sumOfData,
+  });
   final List<RecordModel> recordList;
   final List<RecordModel> recordHistories;
   final DateRange dateRange;
+  final SumOfData sumOfData;
 }
 
 class RecordNotifier extends StateNotifier<RecordProviderState> {
   RecordNotifier(this.userId)
-      : super(RecordProviderState(
-          recordList: [],
-          recordHistories: [],
-          dateRange:
-              DateRange(startDate: DateTime.now(), endDate: DateTime.now()),
-        ));
+      : super(
+          RecordProviderState(
+            recordList: [],
+            recordHistories: [],
+            sumOfData: SumOfData(totalDistance: 0, totalHour: 0),
+            dateRange:
+                DateRange(startDate: DateTime.now(), endDate: DateTime.now()),
+          ),
+        );
   final String userId;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   DateTime date = DateTime.now();
@@ -37,11 +50,13 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       recordList: state.recordList,
       recordHistories: state.recordHistories,
       dateRange: dateRange,
+      sumOfData: state.sumOfData,
     );
   }
 
   Future saveRecord(RecordModel recordModel) async {
     List<RecordModel> recordList = [];
+    // 수정
     if (recordModel.id != null) {
       await firestore
           .collection("records")
@@ -51,6 +66,7 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       state.recordList[state.recordList
           .indexWhere((element) => element.id == recordModel.id)] = recordModel;
       recordList = [...state.recordList];
+      // 등록
     } else {
       final document = await firestore
           .collection("records")
@@ -63,6 +79,7 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       recordList: recordList,
       recordHistories: state.recordHistories,
       dateRange: state.dateRange,
+      sumOfData: state.sumOfData,
     );
   }
 
@@ -90,6 +107,34 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       recordList: state.recordList,
       recordHistories: recordList,
       dateRange: DateRange(startDate: startDate, endDate: endDate),
+      sumOfData: state.sumOfData,
+    );
+  }
+
+  void getSummary(DateTime start, DateTime end) async {
+    final loadedRecords = await firestore
+        .collection('records')
+        .where('user', isEqualTo: userId)
+        .where("date",
+            isGreaterThanOrEqualTo:
+                DateTime(start.year, start.month, start.day))
+        .where("date",
+            isLessThanOrEqualTo: DateTime(end.year, end.month, end.day))
+        .get();
+
+    num totalHour = 0;
+    num totalDistance = 0;
+
+    for (var record in loadedRecords.docs) {
+      final data = record.data();
+      totalHour += data['hour'];
+      totalDistance += data['distance'];
+    }
+    state = RecordProviderState(
+      recordList: state.recordList,
+      recordHistories: state.recordHistories,
+      dateRange: state.dateRange,
+      sumOfData: SumOfData(totalDistance: totalDistance, totalHour: totalHour),
     );
   }
 
@@ -114,6 +159,7 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       recordList: recordList,
       recordHistories: state.recordHistories,
       dateRange: state.dateRange,
+      sumOfData: state.sumOfData,
     );
   }
 
@@ -131,6 +177,7 @@ class RecordNotifier extends StateNotifier<RecordProviderState> {
       recordList: newList,
       recordHistories: state.recordHistories,
       dateRange: state.dateRange,
+      sumOfData: state.sumOfData,
     );
     return resultCode;
   }
