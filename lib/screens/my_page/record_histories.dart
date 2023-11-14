@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:running_mate/models/record.dart';
 import 'package:running_mate/providers/record_provider.dart';
+import 'package:running_mate/widgets/ui_elements/alert_dialog.dart';
 
 enum TypeDateRange { oneMonth, threeMonth, custom }
 
@@ -240,15 +241,23 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
                         setState(() {
                           activeDateRangeType = selectedTypeRange;
                         });
+                        if (start.isBefore(end)) {
+                          ref.read(recordProvider.notifier).setDateRange(
+                                DateRange(
+                                    startDate: start,
+                                    endDate: end,
+                                    isChanged: true),
+                              );
 
-                        ref.read(recordProvider.notifier).setDateRange(
-                              DateRange(
-                                  startDate: start,
-                                  endDate: end,
-                                  isChanged: true),
-                            );
-
-                        Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const AlertDialogWidget(
+                                title: '조회기간 오류',
+                                content: '조회 시작일이 종료일보다 큽니다.'),
+                          );
+                        }
                       },
                       child: const Text(
                         '조회',
@@ -335,11 +344,11 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
       ),
       body: Column(
         children: [
-          // const SizedBox(height: 30),
           Stack(
             children: [
               Container(
-                color: const Color.fromRGBO(163, 183, 99, 0.5),
+                // color: const Color.fromRGBO(163, 183, 99, 0.5),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                 padding:
                     const EdgeInsets.symmetric(vertical: 50, horizontal: 5),
                 child: Column(

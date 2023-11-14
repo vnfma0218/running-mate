@@ -51,16 +51,21 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
 
     final collectionRef = _firestore.collection('articles');
     late QuerySnapshot<Map<String, dynamic>> querySnapshot;
-
+    final now = DateTime.now();
     if (lastDoc == null) {
       querySnapshot = await collectionRef
-          .orderBy("createdAt", descending: true)
+          .where("timeStampDate",
+              isGreaterThanOrEqualTo:
+                  DateTime.utc(now.year, now.month, now.day))
+          .orderBy("timeStampDate", descending: true)
           .limit(10)
           .get();
       ref.watch(meetingArticleProvider.notifier).resetArticleList();
     } else {
       querySnapshot = await collectionRef
-          .orderBy("createdAt", descending: true)
+          .where("timeStampDate",
+              isGreaterThanOrEqualTo:
+                  DateTime.utc(now.year, now.month, now.day))
           .limit(10)
           .startAfterDocument(lastDoc!)
           .get();

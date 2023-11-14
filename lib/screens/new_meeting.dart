@@ -33,6 +33,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
   var _enteredNumOfPeople = '';
   var _enteredDesc = '';
   var _formattedAddress = '';
+  TimeOfDay? _enteredTimeOfDay;
   Timestamp? _createdAt;
   String? articleId;
 
@@ -102,6 +103,9 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
 
   void _onCreateArticle() async {
     if (_formKey.currentState!.validate() && _selectedCoords != null) {
+      final date = dateTextController.text.split('-');
+      final time = timeTextController.text.split(':');
+
       _formKey.currentState!.save();
       _loading = true;
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -119,10 +123,17 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
             "lat": _selectedCoords?.latitude,
             "lng": _selectedCoords?.longitude,
           },
+          "joinUsers": null,
           "distance": _enteredDistance,
           "limitPeople": _isNoLimited ? '' : _enteredNumOfPeople,
           "createdAt": !isUpdating ? FieldValue.serverTimestamp() : _createdAt,
           "updatedAt": isUpdating ? FieldValue.serverTimestamp() : null,
+          "timeStampDate": Timestamp.fromDate(DateTime(
+              int.parse(date[0]),
+              int.parse(date[1]),
+              int.parse(date[2]),
+              _enteredTimeOfDay!.hour,
+              _enteredTimeOfDay!.minute)),
           "date": dateTextController.text,
           "time": timeTextController.text,
         },
@@ -378,14 +389,14 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
                         controller: dateTextController,
                         onTap: () async {
                           DateTime now = DateTime.now();
-                          DateTime tomorrow = now.add(const Duration(days: 7));
+                          DateTime week = now.add(const Duration(days: 7));
 
                           var date = await showDatePicker(
                             initialEntryMode: DatePickerEntryMode.calendarOnly,
                             context: context,
                             initialDate: now,
                             firstDate: now,
-                            lastDate: tomorrow,
+                            lastDate: week,
                             helpText: '날짜는 일주일 내에서 선택할 수 있습니다.',
                           );
 
@@ -424,6 +435,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
                             initialTime: _selectedTime,
                           );
                           if (timeOfDay != null) {
+                            _enteredTimeOfDay = timeOfDay;
                             setState(() {
                               _selectedTime = timeOfDay;
                               timeTextController.text =

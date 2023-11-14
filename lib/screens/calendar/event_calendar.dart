@@ -91,7 +91,7 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
           title: const Text('기록 추가'),
           content: SingleChildScrollView(
             child: SizedBox(
-              height: 550,
+              height: 450,
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -106,6 +106,8 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                         FilteringTextInputFormatter.digitsOnly
                       ],
                       decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.all(10),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -136,6 +138,8 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                               FilteringTextInputFormatter.digitsOnly
                             ],
                             decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: const EdgeInsets.all(10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -163,6 +167,8 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                               FilteringTextInputFormatter.digitsOnly
                             ],
                             decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: const EdgeInsets.all(10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -192,9 +198,11 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                       initialValue:
                           _enteredMemo != null ? _enteredMemo.toString() : '',
                       maxLength: 200,
-                      maxLines: 6,
+                      maxLines: 4,
                       textInputAction: TextInputAction.done,
                       decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.all(10),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

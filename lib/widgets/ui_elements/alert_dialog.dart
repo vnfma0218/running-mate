@@ -22,7 +22,7 @@ class AlertDialogWidget extends StatelessWidget {
           style: TextButton.styleFrom(
             textStyle: Theme.of(context).textTheme.labelLarge,
           ),
-          child: const Text('취소'),
+          child: Text(confirmBtnText == null ? '확인' : '취소'),
           onPressed: () {
             Navigator.of(context).pop();
           },

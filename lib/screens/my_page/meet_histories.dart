@@ -43,7 +43,7 @@ class _MeetHistoriesScreenState extends ConsumerState<MeetHistoriesScreen>
     final myMeetssnapshot =
         await collectionRef.where('user', isEqualTo: userId).get();
     final joinedMeets =
-        await collectionRef.where('joinUesrIds', arrayContains: userId).get();
+        await collectionRef.where('joinUsers', arrayContains: userId).get();
 
     ref
         .read(meetingArticleProvider.notifier)
