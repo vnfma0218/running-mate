@@ -335,26 +335,13 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 30),
+          // const SizedBox(height: 30),
           Stack(
             children: [
-              // Positioned(
-              //     top: 0,
-              //     right: 10,
-              //     child: OutlinedButton(
-              //       style: OutlinedButton.styleFrom(
-              //           padding: const EdgeInsets.all(8)),
-              //       onPressed: () {
-              //         _showMonthPicker();
-              //       },
-              //       child: Text(
-              //         '${selectedYear.toString().substring(2)}년 $selectedMonth월',
-              //         style: const TextStyle(color: Colors.blueAccent),
-              //       ),
-              //     )),
               Container(
+                color: const Color.fromRGBO(163, 183, 99, 0.5),
                 padding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                    const EdgeInsets.symmetric(vertical: 50, horizontal: 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -389,7 +376,7 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
                                   .textTheme
                                   .displaySmall!
                                   .copyWith(
-                                      color: Theme.of(context).primaryColor,
+                                      // color: Theme.of(context).primaryColor,
                                       fontWeight: FontWeight.bold,
                                       fontStyle: FontStyle.italic),
                             ),
@@ -412,7 +399,7 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
                                   .textTheme
                                   .displaySmall!
                                   .copyWith(
-                                      color: Theme.of(context).primaryColor,
+                                      // color: Theme.of(context).primaryColor,
                                       fontWeight: FontWeight.bold,
                                       fontStyle: FontStyle.italic),
                             ),
@@ -432,10 +419,10 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
               ),
             ],
           ),
-          const SizedBox(
-              height: 70,
-              width: double.infinity,
-              child: Divider(color: Colors.grey, thickness: 2.0)),
+          // const SizedBox(
+          //     // height: 70,
+          //     width: double.infinity,
+          //     child: Divider(color: Colors.grey, thickness: 1.0)),
           // 날짜 기간
           Padding(
             padding: const EdgeInsets.all(8.0),

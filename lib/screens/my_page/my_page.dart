@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:running_mate/constants/constant.dart';
 import 'package:running_mate/models/user.dart';
 import 'package:running_mate/providers/user_provider.dart';
 import 'package:running_mate/screens/my_page/edit_profile.dart';
-import 'package:running_mate/screens/my_page/meet_histories.dart';
-import 'package:running_mate/screens/my_page/record_histories.dart';
 import 'package:running_mate/services/auth_service.dart';
+import 'package:running_mate/widgets/mypage/my_page_menu.dart';
 
 class MyPageScreen extends ConsumerStatefulWidget {
   const MyPageScreen({super.key});
@@ -33,6 +33,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       setState(() {
         _userInfo = AuthService().getUserInfo(null);
       });
+      final user = await AuthService().getUserInfo(null);
+      UserModel userModel = UserModel(
+          id: user['id'],
+          name: user['name'],
+          imageUrl: user['imageUrl'],
+          email: user['email']);
+      ref.read(userProvider.notifier).setUserInfo(userModel);
       if (!mounted) {
         return;
       }
@@ -47,12 +54,16 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
   Widget checkUrl(String url) {
     try {
-      return Image.network(
-        url,
-        height: 40.0,
-        width: 40.0,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Icon(Icons.person),
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Image.network(
+          url,
+          height: 45.0,
+          width: 45.0,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.person),
+        ),
       );
     } catch (e) {
       return const Icon(Icons.person);
@@ -114,68 +125,18 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     ],
                   ),
                   const SizedBox(height: 50),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const MeetHistoriesScreen(),
-                      ));
-                    },
-                    child: Row(
+                  ...kMyPageMenus.map(
+                    (e) => Column(
                       children: [
-                        const Icon(
-                          Icons.run_circle_outlined,
-                          size: 30,
+                        MyPageMenuItem(
+                          menuIcon: e['iocn'],
+                          menuName: e['name'],
+                          menuRouter: e['router'],
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '모임 목록',
-                          style: Theme.of(context).textTheme.bodyLarge!,
-                        ),
+                        const SizedBox(height: 15)
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const RecordHistoriesScreen(),
-                      ));
-                    },
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.article_outlined,
-                          size: 30,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '기록 관리',
-                          style: Theme.of(context).textTheme.bodyLarge!,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const RecordHistoriesScreen(),
-                      ));
-                    },
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.mail_outlined,
-                          size: 30,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '공지사항',
-                          style: Theme.of(context).textTheme.bodyLarge!,
-                        ),
-                      ],
-                    ),
-                  ),
+                  )
                 ],
               ),
             );

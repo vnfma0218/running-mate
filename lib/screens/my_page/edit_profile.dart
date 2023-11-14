@@ -107,14 +107,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ? Image.file(
                           _selectedImage!,
                           fit: BoxFit.cover,
-                          width: 100,
+                          width: 90,
+                          height: 90,
                         )
                       : isLoading
                           ? const Icon(Icons.person)
                           : widget.user.imageUrl != null
                               ? Image.network(
                                   widget.user.imageUrl!,
-                                  width: 100,
+                                  width: 90,
+                                  height: 90,
+                                  fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
                                       const Icon(Icons.person),
                                 )
@@ -141,7 +144,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: ImageInput(onPickImage: _selectImage),
                     ),
                   ),
-                )
+                ),
               ],
             ),
             const SizedBox(

@@ -13,6 +13,7 @@ class MeetingArticle {
     required this.time,
     required this.distance,
     this.joinPeople,
+    this.joinUsers,
     this.limitPeople,
   });
 
@@ -21,6 +22,7 @@ class MeetingArticle {
   final String desc;
   Address? address;
   List<JoinUserModel>? joinPeople;
+  List<String>? joinUsers;
   final String user;
   final String date;
   final String time;

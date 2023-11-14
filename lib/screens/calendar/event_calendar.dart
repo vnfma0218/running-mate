@@ -38,9 +38,6 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
   }
 
   List<RecordModel> _listOfDayEvents(DateTime dateTime) {
-    // events
-    print('events: $events');
-    // final mySelectedEvents = ref.watch(recordProvider).mySelectedEvents;
     if (events[DateFormat('yyyy-MM-dd').format(dateTime)] != null) {
       return events[DateFormat('yyyy-MM-dd').format(dateTime)]!;
     } else {
@@ -51,8 +48,6 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
   void _submitRecord() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      print('_recordId: $_recordId');
-
       final record = RecordModel(
         id: _recordId,
         date: _selectedDate!,
@@ -269,58 +264,73 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
     var events = _listOfDayEvents(_selectedDate!);
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          const SizedBox(height: 10),
-          TableCalendar(
-            headerStyle: const HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
-            ),
-            locale: 'ko_KR',
-            firstDay: kFirstDay,
-            lastDay: kLastDay,
-            focusedDay: _focusedDay,
-            calendarFormat: _calendarFormat,
-            onDaySelected: (selectedDay, focusedDay) {
-              if (!isSameDay(_selectedDate, selectedDay)) {
-                setState(() {
-                  _selectedDate = selectedDay;
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 350,
+              child: TableCalendar(
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                ),
+                locale: 'ko_KR',
+                firstDay: kFirstDay,
+                lastDay: kLastDay,
+                focusedDay: _focusedDay,
+                calendarFormat: _calendarFormat,
+                onDaySelected: (selectedDay, focusedDay) {
+                  if (!isSameDay(_selectedDate, selectedDay)) {
+                    setState(() {
+                      _selectedDate = selectedDay;
+                      _focusedDay = focusedDay;
+                    });
+                  }
+                },
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDate, day);
+                },
+                onFormatChanged: (format) {
+                  if (_calendarFormat != format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  }
+                },
+                onPageChanged: (focusedDay) {
                   _focusedDay = focusedDay;
-                });
-              }
-            },
-            selectedDayPredicate: (day) {
-              return isSameDay(_selectedDate, day);
-            },
-            onFormatChanged: (format) {
-              if (_calendarFormat != format) {
-                setState(() {
-                  _calendarFormat = format;
-                });
-              }
-            },
-            onPageChanged: (focusedDay) {
-              _focusedDay = focusedDay;
-            },
-            eventLoader: _listOfDayEvents,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Text(
-                '운동기록',
-                style: Theme.of(context).textTheme.bodyLarge!,
+                },
+                eventLoader: _listOfDayEvents,
               ),
-              const Spacer(),
-              ElevatedButton(
-                  onPressed: () => _showAddEventDialog(false),
-                  child: const Text('추가하기')),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 40,
+              child: Row(
+                children: [
+                  Text(
+                    '운동기록',
+                    style: Theme.of(context).textTheme.bodyLarge!,
+                  ),
+                  const Spacer(),
+                  OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.all(8),
+                          side: BorderSide(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4))),
+                      onPressed: () => _showAddEventDialog(false),
+                      child: const Text('추가하기')),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            ListView.builder(
+              shrinkWrap: true, // <==== limit height. 리스트뷰 크기 고정
+              primary: false, // <====  disable scrolling. 리스트뷰 내부는 스크롤 안할거임
               itemCount: events.length,
               itemBuilder: (context, index) {
                 return Column(
@@ -334,8 +344,8 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                 );
               },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

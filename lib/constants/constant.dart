@@ -1,6 +1,9 @@
 import 'dart:collection';
 
+import 'package:flutter/material.dart';
 import 'package:running_mate/screens/calendar/event.dart';
+import 'package:running_mate/screens/my_page/meet_histories.dart';
+import 'package:running_mate/screens/my_page/record_histories.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 const user_defalut_img_path =
@@ -49,3 +52,30 @@ enum ResultCodeType {
   final int code;
   final String value;
 }
+
+final List<Map<String, dynamic>> kMyPageMenus = [
+  {
+    "name": '모임 목록',
+    "iocn": const Icon(
+      Icons.run_circle_outlined,
+      size: 30,
+    ),
+    "router": const MeetHistoriesScreen()
+  },
+  {
+    "name": '기록 관리',
+    "iocn": const Icon(
+      Icons.article_outlined,
+      size: 30,
+    ),
+    "router": const RecordHistoriesScreen()
+  },
+  {
+    "name": '공지사항',
+    "iocn": const Icon(
+      Icons.mail_outlined,
+      size: 30,
+    ),
+    "router": const MeetHistoriesScreen()
+  },
+];

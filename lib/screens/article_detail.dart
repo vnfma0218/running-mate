@@ -55,6 +55,10 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   void initState() {
     super.initState();
     _article = widget.article;
+    print('_article.joinUsers: ${_article.joinUsers}');
+    if (_article.joinUsers != null) {
+      _fetchJoinPeople();
+    }
     _getUserInfo();
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
@@ -62,12 +66,17 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
     } else {
       currentUserId = currentUser.uid;
       _isMine = currentUserId == _article.user;
-      if (_article.joinPeople != null) {
-        _isJoined = _article.joinPeople!
-            .where((element) => element.id == currentUserId)
-            .isNotEmpty;
+      if (_article.joinUsers != null) {
+        _isJoined =
+            _article.joinUsers!.where((id) => id == currentUserId).isNotEmpty;
       }
     }
+  }
+
+  _fetchJoinPeople() async {
+    _article.joinPeople =
+        await AuthService().fetchUserList(_article.joinUsers!);
+    print('_article.joinPeople: ${_article.joinPeople}');
   }
 
   void _getUserInfo() async {
@@ -182,32 +191,27 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 const Text('참여 인원'),
                 const SizedBox(
                   height: 20,
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: _article.joinPeople!
-                        .map((e) => Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                UserAvatar(
-                                  imageUrl: e.imageUrl,
-                                  name: e.name,
-                                ),
-                                const SizedBox(
-                                  width: 20,
-                                )
-                              ],
-                            ))
-                        .toList(),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _article.joinPeople!
+                      .map((e) => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              UserAvatar(
+                                imageUrl: e.imageUrl,
+                                name: e.name,
+                              ),
+                              const SizedBox(
+                                width: 8,
+                              )
+                            ],
+                          ))
+                      .toList(),
                 )
               ],
             ),
@@ -231,34 +235,26 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
           confirmBtnText: '확인',
           confirmCb: () async {
             final curUser = ref.watch(userProvider);
+            List<String> joinUsers = [];
 
-            JoinUserModel joinUser = JoinUserModel(
-                id: curUser!.id,
-                name: curUser.name,
-                imageUrl: curUser.imageUrl!);
-            List<JoinUserModel> joinPeople = [];
-            List<String> joinUesrIds = [];
-
-            if (_article.joinPeople != null) {
-              joinPeople = [..._article.joinPeople!];
+            if (_article.joinUsers != null) {
+              joinUsers = [..._article.joinUsers!];
             }
             if (!_isJoined) {
-              joinPeople.add(joinUser);
+              joinUsers.add(curUser!.id);
             }
             if (_isJoined) {
-              joinPeople.removeWhere((element) => element.id == joinUser.id);
+              joinUsers.removeWhere((id) => id == curUser!.id);
             }
 
-            final usersJson = joinPeople.map((e) => e.toJson()).toList();
-            joinUesrIds = joinPeople.map((e) => e.id).toList();
             await FirebaseFirestore.instance
                 .collection('articles')
                 .doc(_article.id)
-                .update(
-                    {"joinPeople": usersJson, "joinUesrIds": joinUesrIds}).then(
+                .update({"joinUsers": joinUsers}).then(
               (_) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
+                    duration: const Duration(seconds: 1),
                     content:
                         Text(_isJoined ? '참여가 취소되었습니다' : '참여신청이 완료 되었습니다.'),
                   ),
@@ -267,7 +263,18 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             );
             setState(() {
               _isJoined = !_isJoined;
-              _article.joinPeople = joinPeople;
+              var editedUsers = [..._article.joinPeople!];
+              if (!_isJoined) {
+                editedUsers.removeWhere((element) => element.id == curUser!.id);
+              } else {
+                editedUsers.add(
+                  JoinUserModel(
+                      id: curUser!.id,
+                      name: curUser.name,
+                      imageUrl: curUser.imageUrl!),
+                );
+              }
+              _article.joinPeople = editedUsers;
             });
             if (!mounted) {
               return;
@@ -286,6 +293,10 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    var joinPeople = _article.joinPeople;
+    if (joinPeople != null && joinPeople.length > 3) {
+      joinPeople.sublist(0, 2);
+    }
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -356,8 +367,10 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                           borderRadius: BorderRadius.circular(40),
                           child: _user != null
                               ? Image.network(
+                                  fit: BoxFit.cover,
                                   _user!.imageUrl!,
                                   width: 35,
+                                  height: 35,
                                 )
                               : const Icon(Icons.person),
                         ),
@@ -381,11 +394,9 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  for (var i = 0;
-                                      i < _article.joinPeople!.length;
-                                      i++)
+                                  for (var i = 0; i < joinPeople!.length; i++)
                                     Positioned(
-                                      left: i * 20,
+                                      left: i * 15,
                                       child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Container(
@@ -393,9 +404,16 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                                               color: Colors.white,
                                               shape: BoxShape.circle,
                                             ),
-                                            child: Image.network(
-                                              _article.joinPeople![i].imageUrl,
-                                              width: 25,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(40),
+                                              child: Image.network(
+                                                _article
+                                                    .joinPeople![i].imageUrl,
+                                                fit: BoxFit.cover,
+                                                width: 25,
+                                                height: 25,
+                                              ),
                                             )),
                                       ),
                                     )

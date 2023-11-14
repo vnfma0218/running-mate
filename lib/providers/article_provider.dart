@@ -148,6 +148,7 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
           desc: data['desc'],
           time: data['time'],
           date: data['date'],
+          joinUsers: List<String>.from(data['joinUsers']),
           joinPeople: data['joinPeople'] != null
               ? (data['joinPeople'] as List<dynamic>)
                   .map((e) => JoinUserModel(

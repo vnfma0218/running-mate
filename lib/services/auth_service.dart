@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:running_mate/models/user.dart';
 
 class AuthService {
   // Google Sign in
@@ -24,7 +25,6 @@ class AuthService {
   }
 
   getUserInfo(String? userId) async {
-    print('get info');
     final user = FirebaseAuth.instance.currentUser;
     final userDetail = await FirebaseFirestore.instance
         .collection('users')
@@ -45,6 +45,19 @@ class AuthService {
     });
 
     return userDetail;
+  }
+
+  Future<List<JoinUserModel>> fetchUserList(List<String> userIds) async {
+    List<JoinUserModel> users = [];
+    userIds.forEach((id) async {
+      final user =
+          await FirebaseFirestore.instance.collection('users').doc(id).get();
+      var joinUser = user.data();
+      joinUser!['id'] = id;
+      users.add(JoinUserModel.fromJson(joinUser));
+    });
+    print('users: $users');
+    return users;
   }
 
   isLoggedIn() {
