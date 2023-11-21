@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class MyPageMenuItem extends StatelessWidget {
-  const MyPageMenuItem(
-      {super.key,
-      required this.menuIcon,
-      required this.menuName,
-      required this.menuRouter});
+  const MyPageMenuItem({
+    super.key,
+    required this.menuIcon,
+    required this.menuName,
+    required this.menuRouter,
+  });
   final Icon menuIcon;
   final String menuName;
   final Widget menuRouter;
