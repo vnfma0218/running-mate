@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:running_mate/models/meeting_article.dart';
-import 'package:running_mate/screens/article_detail.dart';
+
+import '../../screens/article_detail_page.dart';
 
 class MeetingItem extends StatefulWidget {
   const MeetingItem({super.key, required this.article});
@@ -27,8 +28,11 @@ class _MeetingItemState extends State<MeetingItem> {
   void _moveDetailPage(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
+        // builder: (context) => ArticleDetailScreen(
+        //   article: widget.article,
+        // ),
         builder: (context) => ArticleDetailScreen(
-          article: widget.article,
+          articleId: widget.article.id,
         ),
       ),
     );

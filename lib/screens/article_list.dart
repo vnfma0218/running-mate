@@ -25,10 +25,10 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
   void initState() {
     super.initState();
     paginatedData();
+    print('------------paginatedData--------');
 
     controller.addListener(() {
       if (controller.position.pixels == controller.position.maxScrollExtent) {
-        print('scroll detect');
         paginatedData();
       }
     });
@@ -114,11 +114,8 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
               ),
               itemCount: articleList.length,
               itemBuilder: (context, index) {
-                final loadedArticles =
-                    ref.watch(meetingArticleProvider).articleList;
-
                 return MeetingItem(
-                  article: loadedArticles[index],
+                  article: articleList[index],
                 );
               },
             ),

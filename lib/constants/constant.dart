@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:running_mate/screens/calendar/event.dart';
 import 'package:running_mate/screens/my_page/meet_histories.dart';
 import 'package:running_mate/screens/my_page/record_histories.dart';
-import 'package:running_mate/screens/notice.dart';
+import 'package:running_mate/screens/notice/notice_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 const user_defalut_img_path =

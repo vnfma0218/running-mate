@@ -47,7 +47,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return urlDownload;
   }
 
+  Future<bool> isNameDuplicated() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection("users")
+        .where('name', isEqualTo: nicknameController.text)
+        .get();
+    return snapshot.docs.isNotEmpty;
+  }
+
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+    ));
+  }
+
   void _editProfile() async {
+    bool isDupl = await isNameDuplicated();
+    if (isDupl) {
+      _showSnackbar('중복되는 닉네임이 존재합니다');
+      return;
+    }
     String? imageUrl = widget.user.imageUrl;
     if (_selectedImage != null) {
       imageUrl = await uploadFile();

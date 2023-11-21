@@ -64,9 +64,8 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
     final newList = [...state.articleList];
     newList[newList.indexWhere((element) => element.id == article.id)] =
         article;
-
     state = ArticleState(
-      updateArticle: state.updateArticle,
+      updateArticle: article,
       articleList: newList,
       myMeets: state.myMeets,
       joinedMeets: state.joinedMeets,
@@ -142,34 +141,36 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
       Timestamp createdAt =
           data['createdAt'] ?? Timestamp.fromDate(DateTime.now());
       return MeetingArticle(
-          id: id,
-          user: data['user'],
-          title: data['title'],
-          desc: data['desc'],
-          time: data['time'],
-          date: data['date'],
-          joinUsers: data['joinUsers'] != null
-              ? List<String>.from(data['joinUsers'])
-              : null,
-          joinPeople: data['joinPeople'] != null
-              ? (data['joinPeople'] as List<dynamic>)
-                  .map((e) => JoinUserModel(
-                        id: e['id'],
-                        imageUrl: e['imageUrl'],
-                        name: e['name'],
-                      ))
-                  .toList()
-              : null,
-          distance: int.parse(data['distance']),
-          limitPeople: data['limitPeople'].toString().isEmpty
-              ? null
-              : int.parse(data['limitPeople']),
-          createdAt: createdAt,
-          address: Address(
-              formattedAddress: data['location']['formattedAddress'],
-              title: data['location']['name'],
-              lat: data['location']['lat'],
-              lng: data['location']['lng']));
+        id: id,
+        user: data['user'],
+        title: data['title'],
+        desc: data['desc'],
+        time: data['time'],
+        date: data['date'],
+        joinUsers: data['joinUsers'] != null
+            ? List<String>.from(data['joinUsers'])
+            : null,
+        joinPeople: data['joinPeople'] != null
+            ? (data['joinPeople'] as List<dynamic>)
+                .map((e) => JoinUserModel(
+                      id: e['id'],
+                      imageUrl: e['imageUrl'],
+                      name: e['name'],
+                    ))
+                .toList()
+            : null,
+        distance: int.parse(data['distance']),
+        limitPeople: data['limitPeople'].toString().isEmpty
+            ? null
+            : int.parse(data['limitPeople']),
+        createdAt: createdAt,
+        address: Address(
+          formattedAddress: data['location']['formattedAddress'],
+          title: data['location']['name'],
+          lat: data['location']['lat'],
+          lng: data['location']['lng'],
+        ),
+      );
     },
   ).toList();
   return newArticles;
@@ -178,4 +179,30 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
 final meetingArticleProvider =
     StateNotifierProvider<MeetingArticleNotifier, ArticleState>((ref) {
   return MeetingArticleNotifier();
+});
+
+typedef ArticleDetailParameters = ({String id});
+
+final articleDetailProvider = FutureProvider.autoDispose
+    // We now use the newly defined record as the argument type.
+    .family<MeetingArticle, ArticleDetailParameters>((ref, arguments) async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final snapshot =
+      await firestore.collection('articles').doc(arguments.id).get();
+  MeetingArticle articleItem = MeetingArticle.fromJson(snapshot, null);
+  List<JoinUserModel> users = [];
+
+  if (articleItem.joinUsers != null) {
+    print('articleItem.joinUsers : ${articleItem.joinUsers}');
+    for (var id in articleItem.joinUsers!) {
+      final user = await firestore.collection('users').doc(id).get();
+      var joinUser = user.data();
+      joinUser!['id'] = id;
+
+      users.add(JoinUserModel.fromJson(joinUser));
+    }
+  }
+  articleItem.joinPeople = users;
+
+  return articleItem;
 });
