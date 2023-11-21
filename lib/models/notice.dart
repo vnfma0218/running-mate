@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class NoticeModel {
   NoticeModel(
@@ -10,7 +11,7 @@ class NoticeModel {
   final String id;
   final String title;
   final String content;
-  final DateTime createdAt;
+  final String createdAt;
 
   factory NoticeModel.fromJson(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -18,12 +19,13 @@ class NoticeModel {
   ) {
     final json = snapshot.data();
     Timestamp createdAt = json?['createdAt'];
+    String formattedDate = DateFormat('yyyy.MM.dd').format(createdAt.toDate());
 
     return NoticeModel(
       id: snapshot.id,
       title: json?['title'],
       content: json?['content'],
-      createdAt: createdAt.toDate(),
+      createdAt: formattedDate,
     );
   }
 }

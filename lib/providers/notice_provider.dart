@@ -2,26 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:running_mate/models/notice.dart';
 
-class NoticeProviderNotifier extends StateNotifier<List<NoticeModel>> {
-  NoticeProviderNotifier() : super([]);
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+final noticeProvider = FutureProvider.autoDispose((ref) async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final snapshot = await firestore.collection('notices').get();
 
-  void addNoticeList() {
-    List<NoticeModel> noticeList = [];
-    _firestore.collection('notices').get().then(
-      (querySnapshot) {
-        for (var docSnapshot in querySnapshot.docs) {
-          NoticeModel notice = NoticeModel.fromJson(docSnapshot, null);
-          noticeList.add(notice);
-        }
-      },
-      onError: (e) => print("Error completing: $e"),
-    );
-    state = noticeList;
-  }
-}
+  final noticeList = snapshot.docs.map((docSnapshot) {
+    return NoticeModel.fromJson(docSnapshot, null);
+  }).toList();
 
-final noticeProvider =
-    StateNotifierProvider<NoticeProviderNotifier, List<NoticeModel>>((ref) {
-  return NoticeProviderNotifier();
+  return noticeList;
 });
