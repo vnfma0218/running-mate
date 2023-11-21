@@ -20,8 +20,11 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  final db = FirebaseFirestore.instance;
+
   final _formKey = GlobalKey<FormState>();
   bool isLogin = true;
+  bool _isNicknameDupl = false;
   File? _selectedImage;
   UploadTask? _uploadTask;
 
@@ -53,7 +56,22 @@ class _AuthScreenState extends State<AuthScreen> {
     _moveHomeScreen();
   }
 
+  Future<bool> isNameDuplicated() async {
+    final snapshot = await db
+        .collection("users")
+        .where('name', isEqualTo: _enteredNickname)
+        .get();
+    return snapshot.docs.isNotEmpty;
+  }
+
   void _createUserWithEmail() async {
+    bool isDupl = await isNameDuplicated();
+    if (isDupl) {
+      setState(() {
+        _isNicknameDupl = true;
+      });
+      return;
+    }
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
@@ -72,8 +90,24 @@ class _AuthScreenState extends State<AuthScreen> {
             email: _enteredEmail!));
       }
     } on FirebaseAuthException catch (autherror) {
-      _showSnackbar(autherror.message ?? '회원가입을 할 수 없습니다.');
+      _authErrMessages(autherror.code);
     }
+  }
+
+  void _authErrMessages(String code) {
+    print('code : $code');
+    var msg = '';
+    switch (code) {
+      case 'INVALID_LOGIN_CREDENTIALS':
+        msg = '이메일 혹은 비밀번호를 확인해주세요.';
+        break;
+      case 'email-already-in-use':
+        msg = '중복된 이메일이 존재합니다.';
+        break;
+      default:
+        msg = '로그인에 실패하였습니다.';
+    }
+    _showSnackbar(msg);
   }
 
   Future<String> _uploadFile(String uid) async {
@@ -113,7 +147,8 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _enteredEmail!, password: _enteredPassword!);
       _moveHomeScreen();
     } on FirebaseAuthException catch (autherror) {
-      _showSnackbar(autherror.message ?? '로그인을 할 수가 없습니다.');
+      _authErrMessages(autherror.code);
+      // _showSnackbar(autherror.message ?? '로그인을 할 수가 없습니다.');
     }
   }
 
@@ -249,6 +284,16 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(
                     height: 10,
                   ),
+                  if (_isNicknameDupl)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        '중복된 닉네임이 존재합니다.',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 221, 85, 85)),
+                      ),
+                    ),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -288,6 +333,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         onPressed: () {
                           setState(() {
                             isLogin = !isLogin;
+                            _isNicknameDupl = false;
                           });
                         },
                         child: Text(!isLogin ? '로그인' : '회원가입'),
@@ -295,39 +341,57 @@ class _AuthScreenState extends State<AuthScreen> {
                     ],
                   ),
                   if (isLogin)
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      )),
-                      onPressed: () async {
-                        // google login
-                        final result = await AuthService().signInWithGoogle();
-                        final user = FirebaseAuth.instance.currentUser;
-                        print(
-                            '------------------login------------------------');
-                        if (result.user.email != null) {
-                          final userDetail =
-                              await AuthService().getUserInfo(user!.uid);
-                          if (userDetail == null) {
-                            _saveUserDetail(
-                              UserModel(
-                                  id: user.uid,
-                                  name: result.user.displayName,
-                                  imageUrl: result
-                                      .additionalUserInfo.profile['picture'],
-                                  email: result.user.email),
-                            );
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                              12,
+                            ))),
+                        onPressed: () async {
+                          var result;
+                          // google login
+                          try {
+                            result = await AuthService().signInWithGoogle();
+                          } catch (err) {
+                            return;
                           }
+                          final user = FirebaseAuth.instance.currentUser;
+                          print(
+                              '------------------login------------------------');
+                          if (result.user.email != null) {
+                            final userDetail =
+                                await AuthService().getUserInfo(user!.uid);
+                            if (userDetail == null) {
+                              _saveUserDetail(
+                                UserModel(
+                                    id: user.uid,
+                                    name: result.user.displayName,
+                                    imageUrl: result
+                                        .additionalUserInfo.profile['picture'],
+                                    email: result.user.email),
+                              );
+                            }
 
-                          _moveHomeScreen();
-                        }
-                      },
-                      child: SvgPicture.asset(
-                        'assets/icons/google.svg',
-                        height: 50,
-                        width: 50,
+                            _moveHomeScreen();
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/google.svg',
+                              height: 35,
+                              width: 35,
+                            ),
+                            const SizedBox(width: 80),
+                            const Text(
+                              '구글 로그인',
+                              style: TextStyle(fontSize: 18),
+                            )
+                          ],
+                        ),
                       ),
                     )
                 ],

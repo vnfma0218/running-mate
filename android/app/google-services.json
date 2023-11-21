@@ -7,12 +7,25 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:867750963476:android:290cbddb0efaaa060bfa01",
+        "mobilesdk_app_id": "1:867750963476:android:6ee6b6919e17376f0bfa01",
         "android_client_info": {
-          "package_name": "com.example.running_mate"
+          "package_name": "com.pooreum.running_mate"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "867750963476-uks52563pvfg379hfn8ogjl5ifjo0230.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pooreum.running_mate",
+            "certificate_hash": "3d74cc06342d43b0921d7721bd79b636bbb880dc"
+          }
+        },
+        {
+          "client_id": "867750963476-352upsh5gdft9qdspnkicpu4ekhvhnrk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCp0ON6K7PzPlOLsvQukHAHZFRH4D6C-Sg"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "867750963476-352upsh5gdft9qdspnkicpu4ekhvhnrk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "867750963476-kd6cnl0sgbub1p19mqbvllj52lclrmop.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.runningMate"
+              }
+            }
+          ]
         }
       }
     }
