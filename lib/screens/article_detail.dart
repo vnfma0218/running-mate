@@ -55,7 +55,6 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   void initState() {
     super.initState();
     _article = widget.article;
-    print('_article.joinUsers: ${_article.joinUsers}');
     if (_article.joinUsers != null) {
       _fetchJoinPeople();
     }
@@ -76,7 +75,6 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   _fetchJoinPeople() async {
     _article.joinPeople =
         await AuthService().fetchUserList(_article.joinUsers!);
-    print('_article.joinPeople: ${_article.joinPeople}');
   }
 
   void _getUserInfo() async {

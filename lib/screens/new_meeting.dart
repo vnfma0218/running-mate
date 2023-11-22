@@ -53,6 +53,8 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
     final updatingArticle = ref.watch(meetingArticleProvider).updateArticle;
     if (updatingArticle.id.isNotEmpty) {
       setState(() {
+        _enteredTimeOfDay =
+            TimeOfDay.fromDateTime(updatingArticle.meetDatetime!);
         isUpdating = true;
         articleId = updatingArticle.id;
         _enteredTitle = updatingArticle.title;
@@ -104,8 +106,6 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
   void _onCreateArticle() async {
     if (_formKey.currentState!.validate() && _selectedCoords != null) {
       final date = dateTextController.text.split('-');
-      final time = timeTextController.text.split(':');
-
       _formKey.currentState!.save();
       _loading = true;
       FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -143,7 +143,6 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
       if (!mounted) {
         return;
       }
-      print('articleId: $articleId');
 
       MeetingArticle article = MeetingArticle(
         id: articleId ?? docRef.id,

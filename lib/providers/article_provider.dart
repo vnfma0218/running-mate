@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:running_mate/models/meeting_article.dart';
 import 'package:running_mate/models/user.dart';
+import 'package:running_mate/screens/article_detail_page.dart';
 
 class ArticleState {
   ArticleState({
@@ -48,7 +49,7 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
   }
 
   void resetUpdatingArticle() {
-    state.updateArticle = MeetingArticle(
+    final resetArticle = MeetingArticle(
       id: '',
       title: '',
       desc: '',
@@ -57,6 +58,12 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
       time: '',
       distance: 0,
       limitPeople: 0,
+    );
+    state = ArticleState(
+      updateArticle: resetArticle,
+      articleList: state.articleList,
+      myMeets: state.myMeets,
+      joinedMeets: state.joinedMeets,
     );
   }
 
@@ -121,9 +128,7 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
   void addRemoteArticleList(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
     final newArticles = fromJson(loadedArticles);
-    for (var element in newArticles) {
-      print(element.createdAt);
-    }
+
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: [...state.articleList, ...newArticles],
@@ -140,6 +145,8 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
       final id = e.id;
       Timestamp createdAt =
           data['createdAt'] ?? Timestamp.fromDate(DateTime.now());
+      DateTime meetDatetime = data['timeStampDate'].toDate();
+
       return MeetingArticle(
         id: id,
         user: data['user'],
@@ -150,6 +157,12 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
         joinUsers: data['joinUsers'] != null
             ? List<String>.from(data['joinUsers'])
             : null,
+        report: Report(report: {
+          ReportEnum.abuseContent: data['report']?['abuseContent'] ?? 0,
+          ReportEnum.marketingContent: data['report']?['marketingContent'] ?? 0,
+          ReportEnum.sexualContent: data['report']?['sexualContent'] ?? 0,
+          ReportEnum.etc: data['report']?['abuse'] ?? 0,
+        }),
         joinPeople: data['joinPeople'] != null
             ? (data['joinPeople'] as List<dynamic>)
                 .map((e) => JoinUserModel(
@@ -170,6 +183,7 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
           lat: data['location']['lat'],
           lng: data['location']['lng'],
         ),
+        meetDatetime: meetDatetime,
       );
     },
   ).toList();
@@ -193,7 +207,6 @@ final articleDetailProvider = FutureProvider.autoDispose
   List<JoinUserModel> users = [];
 
   if (articleItem.joinUsers != null) {
-    print('articleItem.joinUsers : ${articleItem.joinUsers}');
     for (var id in articleItem.joinUsers!) {
       final user = await firestore.collection('users').doc(id).get();
       var joinUser = user.data();

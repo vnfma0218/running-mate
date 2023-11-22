@@ -19,15 +19,26 @@ import 'package:running_mate/widgets/google_map.dart';
 import 'package:running_mate/widgets/running_article/user_avatar.dart';
 import 'package:running_mate/widgets/ui_elements/alert_dialog.dart';
 
-const mapDropDownList = {
-  "게시글 수정": "update",
-  "삭제": "delete",
-};
+enum ReportEnum {
+  sexualContent('성적 컨텐츠', 'sexual'),
+  abuseContent('욕설 컨텐츠', 'abuse'),
+  marketingContent('홍보 컨텐츠', 'marketing'),
+  etc('기타 부적절 컨텐츠', 'etc');
 
-const List<String> dropDownList = <String>[
-  '게시글 수정',
-  '삭제',
-];
+  const ReportEnum(this.label, this.value);
+
+  final String label;
+  final String value;
+}
+
+final Map<String, String> mineDropdownList = {
+  '게시글 수정': 'update',
+  '삭제': 'delete',
+};
+final Map<String, String> dropDownList = {
+  '신고하기': 'report',
+  '공유하기': 'share',
+};
 
 class ArticleDetailScreen extends ConsumerStatefulWidget {
   const ArticleDetailScreen({
@@ -49,6 +60,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   late MeetingArticle _article;
   late GoogleMapController mapController;
   UserModel? _user;
+  ReportEnum? _reportStatus;
 
   @override
   void initState() {
@@ -129,11 +141,9 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
         return const NewMeetingScreen();
       },
     ));
+    ref.invalidate(articleDetailProvider);
+    ref.read(meetingArticleProvider.notifier).resetUpdatingArticle();
 
-    final updatedArticle = ref.read(meetingArticleProvider).updateArticle;
-    setState(() {
-      _article = updatedArticle;
-    });
     _reLocateCameraPos();
   }
 
@@ -149,6 +159,96 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
         );
       },
     );
+  }
+
+  void _showReportDialog() {
+    showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          ReportEnum? reportStatus;
+          print('reportStatus: $reportStatus');
+          return StatefulBuilder(
+            builder: (context, stfSetState) {
+              return Dialog(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const SizedBox(height: 15),
+                      const Text(
+                        '게시글 신고',
+                        style: TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      ...ReportEnum.values.map(
+                        (e) => ListTile(
+                          title: Text(e.label),
+                          leading: Radio<ReportEnum>(
+                            value: e,
+                            groupValue: reportStatus,
+                            onChanged: (ReportEnum? value) {
+                              stfSetState(() {
+                                reportStatus = value;
+                              });
+                              setState(() {
+                                _reportStatus = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('취소')),
+                          TextButton(
+                              onPressed:
+                                  reportStatus == null ? null : _reportArticle,
+                              child: const Text('신고'))
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        });
+  }
+
+  void _reportArticle() async {
+    final prevReport = _article.report!.report.entries.firstWhere((element) {
+      return element.key == _reportStatus;
+    });
+    _article.report!.report
+        .update(_reportStatus!, (value) => prevReport.value + 1);
+    final report = {};
+    for (var entry in _article.report!.report.entries) {
+      report.addAll({entry.key.name: entry.value});
+    }
+    await FirebaseFirestore.instance
+        .collection('articles')
+        .doc(widget.articleId)
+        .update({"report": report});
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        duration: Duration(milliseconds: 1200),
+        content: Text('신고해주셔서 감사합니다.'),
+      ),
+    );
+    Navigator.of(context).pop();
   }
 
   void _onDeleteArticle(BuildContext ctx) async {
@@ -283,28 +383,33 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     final articleDetail =
         ref.watch(articleDetailProvider((id: widget.articleId)));
+    final dropDownMenus = _isMine ? mineDropdownList : dropDownList;
     return Scaffold(
         appBar: AppBar(
           actions: [
-            if (_isMine)
-              DropdownButton(
-                  icon: const Icon(Icons.more_vert),
-                  underline: const SizedBox.shrink(),
-                  items: dropDownList
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (mapDropDownList[value] == 'update') {
-                      _onUpdateArticle();
-                    }
-                    if (mapDropDownList[value] == 'delete') {
-                      // _showDeleteDialog();
-                    }
-                  }),
+            DropdownButton(
+                icon: const Icon(Icons.more_vert),
+                underline: const SizedBox.shrink(),
+                items: dropDownMenus.entries
+                    .map<DropdownMenuItem<String>>(
+                      (MapEntry<String, String> entry) =>
+                          DropdownMenuItem<String>(
+                        value: entry.value,
+                        child: Text(entry.key),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (String? value) {
+                  if (value == 'update') {
+                    _onUpdateArticle();
+                  }
+                  if (value == 'delete') {
+                    _showDeleteDialog();
+                  }
+                  if (value == 'report') {
+                    _showReportDialog();
+                  }
+                }),
           ],
         ),
         bottomNavigationBar: !_isMine
