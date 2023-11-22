@@ -37,7 +37,7 @@ final Map<String, String> mineDropdownList = {
 };
 final Map<String, String> dropDownList = {
   '신고하기': 'report',
-  '공유하기': 'share',
+  // '공유하기': 'share',
 };
 
 class ArticleDetailScreen extends ConsumerStatefulWidget {
@@ -144,7 +144,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
     ref.invalidate(articleDetailProvider);
     ref.read(meetingArticleProvider.notifier).resetUpdatingArticle();
 
-    _reLocateCameraPos();
+    // _reLocateCameraPos();
   }
 
   void _showDeleteDialog() {
@@ -437,15 +437,17 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     )
                     .toList(),
                 onChanged: (String? value) {
-                  if (value == 'update') {
-                    if (_article.joinUsers!.isNotEmpty) {
-                      _onSnackbarMessage(
-                        message: '참여인원이 있어 수정할 수 없습니다.',
-                      );
-                    } else {
-                      _onUpdateArticle();
-                    }
-                  }
+                  print('value: $value');
+                  _onUpdateArticle();
+                  // if (value == 'update') {
+                  //   if (_article.joinUsers!.isNotEmpty) {
+                  //     _onSnackbarMessage(
+                  //       message: '참여인원이 있어 수정할 수 없습니다.',
+                  //     );
+                  //   } else {
+                  //     _onUpdateArticle();
+                  //   }
+                  // }
                   if (value == 'delete') {
                     _showDeleteDialog();
                   }

@@ -39,7 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
 
   final List<Map<String, dynamic>> _children = [
-    {"widget": const ArticleListScreen(), "title": 'Today\'s Run'},
+    {"widget": const ArticleListScreen(), "title": '러닝 모임'},
     {"widget": const EventCalendarScreen(), "title": '기록'},
     {"widget": const MyPageScreen(), "title": '프로필'}
   ];

@@ -40,6 +40,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
 
   TimeOfDay _selectedTime = TimeOfDay.now();
   LatLng? _selectedCoords;
+  DateTime? meetDatetime;
 
   var _loading = false;
 
@@ -57,6 +58,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
         _enteredTimeOfDay =
             TimeOfDay.fromDateTime(updatingArticle.meetDatetime!);
         isUpdating = true;
+        meetDatetime = updatingArticle.meetDatetime!;
         articleId = updatingArticle.id;
         _enteredTitle = updatingArticle.title;
         _enteredDesc = updatingArticle.desc;
@@ -157,6 +159,9 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
             ? int.parse(_enteredNumOfPeople)
             : null,
         createdAt: Timestamp.fromDate(DateTime.now()),
+        meetDatetime: meetDatetime ??
+            DateTime(int.parse(date[0]), int.parse(date[1]), int.parse(date[2]),
+                _enteredTimeOfDay!.hour, _enteredTimeOfDay!.minute),
         address: Address(
           formattedAddress: '',
           title: locTextController.text,

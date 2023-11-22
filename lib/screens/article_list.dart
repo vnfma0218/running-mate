@@ -56,8 +56,8 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
           .where("timeStampDate",
               isGreaterThanOrEqualTo:
                   DateTime.utc(now.year, now.month, now.day))
-          .orderBy("timeStampDate", descending: true)
-          .limit(10)
+          .orderBy("timeStampDate", descending: false)
+          .limit(6)
           .get();
       ref.watch(meetingArticleProvider.notifier).resetArticleList();
     } else {
@@ -65,7 +65,8 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
           .where("timeStampDate",
               isGreaterThanOrEqualTo:
                   DateTime.utc(now.year, now.month, now.day))
-          .limit(10)
+          .orderBy("timeStampDate", descending: false)
+          .limit(6)
           .startAfterDocument(lastDoc!)
           .get();
     }

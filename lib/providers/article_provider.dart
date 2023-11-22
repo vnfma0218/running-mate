@@ -37,10 +37,13 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
 
   void addUpdateArticle(MeetingArticle article) {
     state.updateArticle = article;
+    final newArticleList = [...state.articleList];
+    newArticleList[newArticleList
+        .indexWhere((element) => element.id == article.id)] = article;
 
     state = ArticleState(
       updateArticle: state.updateArticle,
-      articleList: state.articleList,
+      articleList: newArticleList,
       myMeets: state.myMeets,
       joinedMeets: state.joinedMeets,
     );
@@ -94,6 +97,8 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
 
   void addCreatedArticle(MeetingArticle article) {
     final articleList = [article, ...state.articleList];
+    articleList.sort((a, b) => a.meetDatetime!.compareTo(b.meetDatetime!));
+
     state = ArticleState(
       updateArticle: state.updateArticle,
       articleList: articleList,
@@ -148,7 +153,6 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
       Timestamp createdAt =
           data['createdAt'] ?? Timestamp.fromDate(DateTime.now());
       DateTime meetDatetime = data['timeStampDate'].toDate();
-
       return MeetingArticle(
         id: id,
         user: data['user'],

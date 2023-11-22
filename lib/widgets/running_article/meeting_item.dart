@@ -4,7 +4,10 @@ import 'package:running_mate/models/meeting_article.dart';
 import '../../screens/article_detail_page.dart';
 
 class MeetingItem extends StatefulWidget {
-  const MeetingItem({super.key, required this.article});
+  const MeetingItem({
+    super.key,
+    required this.article,
+  });
   final MeetingArticle article;
 
   @override
@@ -25,12 +28,9 @@ class _MeetingItemState extends State<MeetingItem> {
     }
   }
 
-  void _moveDetailPage(BuildContext context) {
-    Navigator.of(context).push(
+  void _moveDetailPage(BuildContext context) async {
+    await Navigator.of(context).push(
       MaterialPageRoute(
-        // builder: (context) => ArticleDetailScreen(
-        //   article: widget.article,
-        // ),
         builder: (context) => ArticleDetailScreen(
           articleId: widget.article.id,
         ),

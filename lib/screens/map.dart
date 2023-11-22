@@ -96,7 +96,6 @@ class _MapScreenState extends State<MapScreen> {
 
     locationData = await location.getLocation();
     if (locationData.latitude != null) {
-      print('----------getcur location---------------');
       mapController.animateCamera(
         CameraUpdate.newLatLng(
           LatLng(locationData.latitude!, locationData.longitude!),
