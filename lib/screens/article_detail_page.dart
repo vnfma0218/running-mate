@@ -166,7 +166,6 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
         context: context,
         builder: (BuildContext context) {
           ReportEnum? reportStatus;
-          print('reportStatus: $reportStatus');
           return StatefulBuilder(
             builder: (context, stfSetState) {
               return Dialog(
@@ -225,6 +224,37 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
         });
   }
 
+  void _onRunningDetailDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RunningDetailRow(label: '일자', text: _article.date),
+                const Divider(thickness: 1, height: 25),
+                RunningDetailRow(label: '시간', text: _article.time),
+                const Divider(thickness: 1, height: 25),
+                RunningDetailRow(
+                    label: '예상 거리', text: '${_article.distance.toString()}km'),
+                const Divider(thickness: 1, height: 25),
+                RunningDetailRow(
+                  label: '최대 인원',
+                  text: _article.limitPeople == null
+                      ? '제한 없음'
+                      : '${_article.limitPeople.toString()}명',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _reportArticle() async {
     final prevReport = _article.report!.report.entries.firstWhere((element) {
       return element.key == _reportStatus;
@@ -242,13 +272,20 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        duration: Duration(milliseconds: 1200),
-        content: Text('신고해주셔서 감사합니다.'),
-      ),
+
+    _onSnackbarMessage(
+      message: '신고해주셔서 감사합니다.',
     );
     Navigator.of(context).pop();
+  }
+
+  void _onSnackbarMessage({required String message, int duration = 1200}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: Duration(milliseconds: duration),
+        content: Text(message),
+      ),
+    );
   }
 
   void _onDeleteArticle(BuildContext ctx) async {
@@ -401,7 +438,13 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     .toList(),
                 onChanged: (String? value) {
                   if (value == 'update') {
-                    _onUpdateArticle();
+                    if (_article.joinUsers!.isNotEmpty) {
+                      _onSnackbarMessage(
+                        message: '참여인원이 있어 수정할 수 없습니다.',
+                      );
+                    } else {
+                      _onUpdateArticle();
+                    }
                   }
                   if (value == 'delete') {
                     _showDeleteDialog();
@@ -540,18 +583,26 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                         const SizedBox(
                           height: 20,
                         ),
-                        SizedBox(
-                          width: screenWidth * 0.8,
-                          child: Text(
-                            _article.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium!
-                                .copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                          ),
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: screenWidth * 0.6,
+                              child: Text(
+                                _article.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium!
+                                    .copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton(
+                                onPressed: _onRunningDetailDialog,
+                                child: const Text('상세정보'))
+                          ],
                         ),
                         const SizedBox(
                           height: 5,
@@ -573,7 +624,6 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             );
           },
           error: (error, stackTrace) {
-            print('error: $error');
             return const Center(
               child: Text('Uh oh. Something went wrong!'),
             );
@@ -582,5 +632,33 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             child: CircularProgressIndicator(),
           ),
         ));
+  }
+}
+
+class RunningDetailRow extends StatelessWidget {
+  const RunningDetailRow({super.key, required this.label, required this.text});
+
+  final String label;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 18,
+          ),
+        ),
+        const Spacer(),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 16,
+          ),
+        ),
+      ],
+    );
   }
 }

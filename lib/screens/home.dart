@@ -14,7 +14,7 @@ import 'package:running_mate/widgets/ui_elements/alert_dialog.dart';
 
 const myPageDropDownInfo = [
   {"text": '로그아웃', "value": 'logout'},
-  {"text": '설정', "value": 'setting'},
+  // {"text": '설정', "value": 'setting'},
 ];
 
 enum PageType {
@@ -37,7 +37,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
-  final TextEditingController _controller = TextEditingController();
 
   final List<Map<String, dynamic>> _children = [
     {"widget": const ArticleListScreen(), "title": 'Today\'s Run'},
@@ -115,21 +114,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       .copyWith(fontWeight: FontWeight.bold),
                 ),
                 actions: [
-                  if (_selectedIndex == PageType.articles.number)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: const Row(
-                          children: [
-                            Text('지도로 보기'),
-                            Icon(
-                              Icons.map,
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
+                  // if (_selectedIndex == PageType.articles.number)
+                  //   Padding(
+                  //     padding: const EdgeInsets.only(right: 10),
+                  //     child: GestureDetector(
+                  //       onTap: () {},
+                  //       child: const Row(
+                  //         children: [
+                  //           Text('지도로 보기'),
+                  //           Icon(
+                  //             Icons.map,
+                  //           )
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
                   if (_selectedIndex == PageType.mypage.number)
                     DropdownButton(
                         icon: const Icon(Icons.more_vert),

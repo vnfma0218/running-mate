@@ -48,18 +48,15 @@ class AuthService {
   }
 
   Future<List<JoinUserModel>> fetchUserList(List<String> userIds) async {
-    print('userIds: $userIds');
     List<JoinUserModel> users = [];
     userIds.forEach((id) async {
       final user =
           await FirebaseFirestore.instance.collection('users').doc(id).get();
       var joinUser = user.data();
       joinUser!['id'] = id;
-      print('user: $joinUser');
 
       users.add(JoinUserModel.fromJson(joinUser));
     });
-    print('users: $users');
     return users;
   }
 

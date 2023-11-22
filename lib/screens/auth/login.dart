@@ -33,14 +33,14 @@ class _AuthScreenState extends State<AuthScreen> {
   String? _enteredPassword;
 
   String? validateEmail(String? value) {
-    final regex = RegExp(email_repex);
+    final regex = RegExp(emailRepex);
     return value!.isEmpty || !regex.hasMatch(value) ? '알맞은 이메일을 입력해주세요' : null;
   }
 
   String? validateNickname(String? value) {
-    final regex = RegExp(nickname_regex);
+    final regex = RegExp(nicknameRegex);
     return value!.isEmpty || !regex.hasMatch(value)
-        ? '닉네임은 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 입력해주세요'
+        ? '닉네임은 2자 이상 10자 이하 띄어쓰기 불가'
         : null;
   }
 
@@ -78,7 +78,7 @@ class _AuthScreenState extends State<AuthScreen> {
               email: _enteredEmail!, password: _enteredPassword!);
 
       if (credential.user != null) {
-        var userImageUrl = user_defalut_img_path;
+        var userImageUrl = userDefaultImgPath;
         if (_selectedImage != null) {
           userImageUrl = await _uploadFile(credential.user!.uid);
         }
@@ -95,7 +95,6 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _authErrMessages(String code) {
-    print('code : $code');
     var msg = '';
     switch (code) {
       case 'INVALID_LOGIN_CREDENTIALS':
@@ -232,7 +231,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   if (!isLogin) const InputLabel(text: '닉네임'),
                   if (!isLogin)
                     TextFormField(
-                      maxLength: 30,
+                      maxLength: 10,
                       decoration: InputDecoration(
                         labelText: '닉네임',
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -352,15 +351,12 @@ class _AuthScreenState extends State<AuthScreen> {
                             ))),
                         onPressed: () async {
                           var result;
-                          // google login
                           try {
                             result = await AuthService().signInWithGoogle();
                           } catch (err) {
                             return;
                           }
                           final user = FirebaseAuth.instance.currentUser;
-                          print(
-                              '------------------login------------------------');
                           if (result.user.email != null) {
                             final userDetail =
                                 await AuthService().getUserInfo(user!.uid);

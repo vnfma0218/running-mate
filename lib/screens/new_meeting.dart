@@ -33,6 +33,7 @@ class _NewMeetingScreenState extends ConsumerState<NewMeetingScreen> {
   var _enteredNumOfPeople = '';
   var _enteredDesc = '';
   var _formattedAddress = '';
+
   TimeOfDay? _enteredTimeOfDay;
   Timestamp? _createdAt;
   String? articleId;

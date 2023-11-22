@@ -482,11 +482,8 @@ class _RecordHistoriesScreenState extends ConsumerState<RecordHistoriesScreen> {
               child: ListView.builder(
                 shrinkWrap: true,
                 physics: const ScrollPhysics(),
-                // physics: const NeverScrollableScrollPhysics(),
                 itemCount: dateList.length,
                 itemBuilder: (context, index) {
-                  // print('test');
-                  // print(recordHistories[index].date);
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(

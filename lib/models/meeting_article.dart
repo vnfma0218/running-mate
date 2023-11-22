@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:running_mate/models/user.dart';
 import 'package:running_mate/screens/article_detail_page.dart';
 
+enum ArticleStatus { _, normal, stop }
+
 class MeetingArticle {
   MeetingArticle({
     required this.id,
@@ -18,6 +20,7 @@ class MeetingArticle {
     this.joinUsers,
     this.limitPeople,
     this.report,
+    this.status,
   });
 
   final String id;
@@ -34,6 +37,7 @@ class MeetingArticle {
   Timestamp? createdAt;
   DateTime? meetDatetime;
   Report? report;
+  int? status;
 
   factory MeetingArticle.fromJson(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -43,7 +47,6 @@ class MeetingArticle {
     Timestamp createdAt =
         json?['createdAt'] ?? Timestamp.fromDate(DateTime.now());
     DateTime meetDatetime = json?['timeStampDate'].toDate();
-
     return MeetingArticle(
       id: snapshot.id,
       title: json?['title'],
@@ -65,15 +68,17 @@ class MeetingArticle {
                   ))
               .toList()
           : null,
-      // limitPeople: int.parse(json?['limitPeople']),
-      limitPeople: 2,
+      limitPeople: json?['limitPeople'] != null &&
+              json!['limitPeople'].toString().isEmpty
+          ? null
+          : int.parse(json?['limitPeople']),
       report: Report(report: {
         ReportEnum.abuseContent: json?['report']?['abuseContent'] ?? 0,
         ReportEnum.marketingContent: json?['report']?['marketingContent'] ?? 0,
         ReportEnum.sexualContent: json?['report']?['sexualContent'] ?? 0,
         ReportEnum.etc: json?['report']?['abuse'] ?? 0,
       }),
-
+      status: json?['status'] ?? 1,
       address: Address(
         formattedAddress: json?['location']['formattedAddress'],
         title: json?['location']['name'],

@@ -37,8 +37,6 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
 
   void addUpdateArticle(MeetingArticle article) {
     state.updateArticle = article;
-    state.articleList[state.articleList
-        .indexWhere((element) => element.id == article.id)] = article;
 
     state = ArticleState(
       updateArticle: state.updateArticle,
@@ -127,7 +125,11 @@ class MeetingArticleNotifier extends StateNotifier<ArticleState> {
 
   void addRemoteArticleList(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> loadedArticles) {
-    final newArticles = fromJson(loadedArticles);
+    List<MeetingArticle> newArticles = fromJson(loadedArticles);
+
+    newArticles = newArticles
+        .where((element) => element.status != ArticleStatus.stop.index)
+        .toList();
 
     state = ArticleState(
       updateArticle: state.updateArticle,
@@ -163,6 +165,7 @@ fromJson(List<QueryDocumentSnapshot<Map<String, dynamic>>> articles) {
           ReportEnum.sexualContent: data['report']?['sexualContent'] ?? 0,
           ReportEnum.etc: data['report']?['abuse'] ?? 0,
         }),
+        status: data['status'] ?? 1,
         joinPeople: data['joinPeople'] != null
             ? (data['joinPeople'] as List<dynamic>)
                 .map((e) => JoinUserModel(

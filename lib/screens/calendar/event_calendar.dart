@@ -245,9 +245,7 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
   }
 
   getMapEvents(List<RecordModel> recordList) {
-    // print('recordList: $recordList');
     events = {};
-    // final Map<String, List<RecordModel>> events = {};
     for (var element in recordList) {
       if (events[DateFormat('yyyy-MM-dd').format(element.date)] != null) {
         events[DateFormat('yyyy-MM-dd').format(element.date)]?.add(element);

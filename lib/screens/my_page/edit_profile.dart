@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:running_mate/constants/constant.dart';
 import 'package:running_mate/models/user.dart';
 import 'package:running_mate/widgets/ui_elements/image_input.dart';
 import 'package:running_mate/widgets/ui_elements/input_label.dart';
@@ -20,6 +21,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File? _selectedImage;
   UploadTask? _uploadTask;
   bool isLoading = false;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -31,6 +33,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     nicknameController.dispose();
     super.dispose();
+  }
+
+  String? validateNickname(String? value) {
+    final regex = RegExp(nicknameRegex);
+    return value!.isEmpty || !regex.hasMatch(value)
+        ? '닉네임은 2자 이상 10자 이하 띄어쓰기 불가합니다'
+        : null;
   }
 
   Future<String> uploadFile() async {
@@ -62,6 +71,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _editProfile() async {
+    if (!_formKey.currentState!.validate()) {
+      // _showSnackbar('중복되는 닉네임이 존재합니다');
+      return;
+    }
+
     bool isDupl = await isNameDuplicated();
     if (isDupl) {
       _showSnackbar('중복되는 닉네임이 존재합니다');
@@ -174,7 +188,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               children: [
                 const InputLabel(text: '닉네임'),
                 Form(
+                  key: _formKey,
                   child: TextFormField(
+                    validator: validateNickname,
                     controller: nicknameController,
                     decoration: InputDecoration(
                       label: const Text('닉네임'),
