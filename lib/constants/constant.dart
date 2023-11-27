@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:running_mate/screens/calendar/event.dart';
+import 'package:running_mate/screens/my_page/inquiry.dart';
 import 'package:running_mate/screens/my_page/meet_histories.dart';
 import 'package:running_mate/screens/my_page/record_histories.dart';
 import 'package:running_mate/screens/notice/notice_list.dart';
@@ -72,11 +73,19 @@ final List<Map<String, dynamic>> kMyPageMenus = [
     "router": const RecordHistoriesScreen()
   },
   {
-    "name": '공지사항',
+    "name": '공지 사항',
+    "iocn": const Icon(
+      Icons.announcement_outlined,
+      size: 30,
+    ),
+    "router": const NoticeListPage()
+  },
+  {
+    "name": '문의 하기',
     "iocn": const Icon(
       Icons.mail_outlined,
       size: 30,
     ),
-    "router": const NoticeListPage()
+    "router": const InquiryPage()
   },
 ];

@@ -437,17 +437,17 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     )
                     .toList(),
                 onChanged: (String? value) {
-                  print('value: $value');
-                  _onUpdateArticle();
-                  // if (value == 'update') {
-                  //   if (_article.joinUsers!.isNotEmpty) {
-                  //     _onSnackbarMessage(
-                  //       message: '참여인원이 있어 수정할 수 없습니다.',
-                  //     );
-                  //   } else {
-                  //     _onUpdateArticle();
-                  //   }
-                  // }
+                  if (value == 'update') {
+                    if (_article.joinUsers != null &&
+                        _article.joinUsers!.isNotEmpty) {
+                      _onSnackbarMessage(
+                        message: '참여인원이 있어 수정할 수 없습니다.',
+                      );
+                    } else {
+                      _onUpdateArticle();
+                    }
+                  }
+
                   if (value == 'delete') {
                     _showDeleteDialog();
                   }
