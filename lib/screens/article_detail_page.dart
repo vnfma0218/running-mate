@@ -256,26 +256,46 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
   }
 
   void _reportArticle() async {
-    final prevReport = _article.report!.report.entries.firstWhere((element) {
-      return element.key == _reportStatus;
-    });
-    _article.report!.report
-        .update(_reportStatus!, (value) => prevReport.value + 1);
-    final report = {};
-    for (var entry in _article.report!.report.entries) {
-      report.addAll({entry.key.name: entry.value});
-    }
-    await FirebaseFirestore.instance
-        .collection('articles')
-        .doc(widget.articleId)
-        .update({"report": report});
-    if (!mounted) {
-      return;
-    }
+    final db = FirebaseFirestore.instance;
+
+    db
+        .collection("reports")
+        .where('articleId', isEqualTo: widget.articleId)
+        .get()
+        .then(
+      (querySnapshot) async {
+        if (querySnapshot.docs.isNotEmpty) {
+          for (var docSnapshot in querySnapshot.docs) {
+            final report = Report.fromFirestore(docSnapshot, null);
+            final prevCount = report.count;
+            prevCount[_reportStatus!.name] =
+                prevCount[_reportStatus!.name]! + 1;
+            await db
+                .collection('reports')
+                .doc(report.id)
+                .update({"count": prevCount});
+          }
+        } else {
+          final Map<String, num> report = {};
+          for (var entry in ReportEnum.values) {
+            report.addAll({entry.name: 0});
+          }
+          report[_reportStatus!.name] = 1;
+          await db.collection('reports').doc().set({
+            "articleId": widget.articleId,
+            "createdAt": FieldValue.serverTimestamp(),
+            "count": report,
+          });
+        }
+      },
+    );
 
     _onSnackbarMessage(
       message: '신고해주셔서 감사합니다.',
     );
+    if (!mounted) {
+      return;
+    }
     Navigator.of(context).pop();
   }
 

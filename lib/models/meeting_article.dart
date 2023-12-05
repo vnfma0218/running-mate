@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:running_mate/models/user.dart';
-import 'package:running_mate/screens/article_detail_page.dart';
 
 enum ArticleStatus { _, normal, stop }
 
@@ -19,7 +18,6 @@ class MeetingArticle {
     this.joinPeople,
     this.joinUsers,
     this.limitPeople,
-    this.report,
     this.status,
   });
 
@@ -36,7 +34,6 @@ class MeetingArticle {
   int? limitPeople;
   Timestamp? createdAt;
   DateTime? meetDatetime;
-  Report? report;
   int? status;
 
   factory MeetingArticle.fromJson(
@@ -72,12 +69,6 @@ class MeetingArticle {
               json!['limitPeople'].toString().isEmpty
           ? null
           : int.parse(json?['limitPeople']),
-      report: Report(report: {
-        ReportEnum.abuseContent: json?['report']?['abuseContent'] ?? 0,
-        ReportEnum.marketingContent: json?['report']?['marketingContent'] ?? 0,
-        ReportEnum.sexualContent: json?['report']?['sexualContent'] ?? 0,
-        ReportEnum.etc: json?['report']?['abuse'] ?? 0,
-      }),
       status: json?['status'] ?? 1,
       address: Address(
         formattedAddress: json?['location']['formattedAddress'],
@@ -104,7 +95,42 @@ class Address {
 }
 
 class Report {
-  Report({required this.report});
+  Report(
+      {required this.id,
+      required this.articleId,
+      required this.createdAt,
+      required this.count});
 
-  final Map<ReportEnum, int> report;
+  final String id;
+  final String articleId;
+  final DateTime createdAt;
+  final Map<String, num> count;
+
+  factory Report.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final data = snapshot.data();
+    final Map<String, num> count = {
+      'abuseContent': data?['count']['abuseContent'],
+      'etc': data?['count']['etc'],
+      'marketingContent': data?['count']['marketingContent'],
+      'sexualContent': data?['count']['sexualContent'],
+    };
+    return Report(
+      id: snapshot.id,
+      articleId: data?['articleId'],
+      count: count,
+      createdAt: data?['createdAt'].toDate(),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      "id": id,
+      "articleId": articleId,
+      "count": count,
+      "createdAt": createdAt,
+    };
+  }
 }

@@ -275,7 +275,7 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
           children: [
             const SizedBox(height: 10),
             SizedBox(
-              height: 350,
+              height: 400,
               child: TableCalendar(
                 headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
@@ -310,7 +310,7 @@ class _EventCalendarScreenState extends ConsumerState<EventCalendarScreen> {
                 eventLoader: _listOfDayEvents,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 50),
             SizedBox(
               height: 40,
               child: Row(
